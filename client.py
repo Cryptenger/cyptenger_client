@@ -46,9 +46,9 @@ class Worker(QRunnable):
                 #appli.history = appli.history + msg_received + '\n'
                 #appli.messages.setPlainText(appli.history)
 
-class MainWindow(QMainWindow):
+class Cryptenger_UI(QMainWindow):
     def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super(Cryptenger_UI, self).__init__(*args, **kwargs)
 
         self.history = ''
 
@@ -96,5 +96,5 @@ if __name__ == "__main__":
 
 
     app = QApplication([])
-    window = MainWindow()
+    window = Cryptenger_UI()
     app.exec_()
