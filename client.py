@@ -4,7 +4,7 @@ import random
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-                                                    
+
 #Connexion au serveur
 import socket
 import select
@@ -42,20 +42,20 @@ class Worker(QRunnable):
                 msg_received = msg_received.decode()
 
                 print(msg_received)
-                
+
                 #appli.history = appli.history + msg_received + '\n'
-                #appli.messages.setPlainText(appli.history) 
+                #appli.messages.setPlainText(appli.history)
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self.history = ''
-        
+
         self.button = QPushButton("Send Message")
         self.dialog = QLineEdit()
         self.messages = QTextEdit()
-        
+
         self.button.clicked.connect(self.msgSend)
         self.messages.setReadOnly(True)
 
@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
 
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-        
+
         worker = Worker()
         self.threadpool.start(worker)
 
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
 
     def msgRecv(self, msg):
         print("Signal reçu")
-        
+
 
 
 if __name__ == "__main__":
