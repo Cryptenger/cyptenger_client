@@ -1,9 +1,8 @@
-import sys
-import random
+import sys, random, os
 
-from PyQt5.QtGui import *
+from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from gui import mainWidgetOBJ, connectionWidgetOBJ
 
 #Connexion au serveur
 import socket
@@ -17,11 +16,14 @@ server_connection.connect((host, port))
 print("La connexion avec le serveur a été établie sur le port", port)
 #Fin de la connexion
 
-class WorkerSignals(QObject):
-    result = pyqtSignal(object)
+#root directory
+MAINDIR = os.path.dirname(os.path.realpath(__file__))
+
+class WorkerSignals(QtCore.QObject):
+    result = QtCore.pyqtSignal(object)
 
 
-class Worker(QRunnable):
+class Worker(QtCore.QRunnable):
     '''
     Worker thread
     '''
@@ -30,7 +32,7 @@ class Worker(QRunnable):
 
         self.signals = WorkerSignals()
 
-    @pyqtSlot()
+    @QtCore.pyqtSlot()
     def run(self):
         while True:
             server_message, wlist, xlist = select.select([server_connection], [], [], 0.05)
@@ -46,9 +48,41 @@ class Worker(QRunnable):
                 #appli.history = appli.history + msg_received + '\n'
                 #appli.messages.setPlainText(appli.history)
 
-class Cryptenger_UI(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
-        super(Cryptenger_UI, self).__init__(*args, **kwargs)
+        super(MainWindow, self).__init__(*args, **kwargs)
+        self.initWindow()
+        self.buildWindow()
+
+
+
+    def initWindow(self):
+        self.setGeometry(0, 0, 1280, 720)
+        self.setWindowTitle('Cryptenger')
+        self.setWindowIcon(QtGui.QIcon(MAINDIR + '/assets/ico/cryptenger_icon.ico'))
+
+        with open(MAINDIR + '/assets/css/style.css') as style:
+            self.setStyleSheet(style.read())
+
+    def buildWindow(self):
+        #layout
+        self.main_V_lyt = QVBoxLayout()
+
+        #connection
+        self.connection_widget = connectionWidgetOBJ()
+        self.connection_widget.start_btn.clicked.connect(self.connectAndRunSever)
+        self.main_V_lyt.addWidget(self.connection_widget)
+
+        """TEMP PARCE QUE RELOU"""
+        self.connection_widget.firstName_lne.setText('Cosius')
+        self.connection_widget.secondName_lne.setText('KTN')
+        self.connection_widget.thirdName_lne.setText('Moi')
+        self.connection_widget.port_lne.setText('25565')
+        self.connection_widget.adresse_lne.setText('localhost')
+
+
+
+
 
         self.history = ''
 
@@ -57,23 +91,54 @@ class Cryptenger_UI(QMainWindow):
         self.messages = QTextEdit()
 
         self.button.clicked.connect(self.msgSend)
+        self.dialog.returnPressed.connect(self.msgSend)
         self.messages.setReadOnly(True)
+
+        #test = mainWidgetOBJ()
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.messages)
         self.layout.addWidget(self.dialog)
         self.layout.addWidget(self.button)
+        #self.layout.addWidget(test)
 
         widget = QWidget()
-        widget.setLayout(self.layout)
+        widget.setLayout(self.main_V_lyt)
         self.setCentralWidget(widget)
         self.show()
 
-        self.threadpool = QThreadPool()
+        self.threadpool = QtCore.QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         worker = Worker()
         self.threadpool.start(worker)
+
+    def connectAndRunSever(self):
+        settings = {
+            "firstName" : self.connection_widget.firstName_lne.text(),
+            "secondName" : self.connection_widget.secondName_lne.text(),
+            "thirdName" : self.connection_widget.thirdName_lne.text(),
+            "port" : self.connection_widget.port_lne.text(),
+            "adress" : self.connection_widget.adresse_lne.text(),
+            }
+
+        #check if the user have given all the required informations
+        itIsOK = True
+        for i in settings:
+            if settings[i]=='':
+                print('You must give a ' + i)
+                itIsOK = False
+
+
+        #if the user have given all the required informations the client starts
+        if itIsOK == True:
+            #close connection widget
+            self.connection_widget.close()
+
+            self.cryptenger_win = mainWidgetOBJ(serverName=settings['adress'], Username=settings['firstName'])
+            self.main_V_lyt.addWidget(self.cryptenger_win)
+
+
 
 
     def msgSend(self):
@@ -96,5 +161,5 @@ if __name__ == "__main__":
 
 
     app = QApplication([])
-    window = Cryptenger_UI()
+    window = MainWindow()
     app.exec_()

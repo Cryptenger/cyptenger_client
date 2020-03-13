@@ -1,0 +1,68 @@
+/*
+#262626 : background
+#3b3b3b : borders
+
+*/
+*{
+    background: #262626;
+    color: white;
+    border: 2px solid #3b3b3b;
+    border-radius: 4px;
+
+}
+
+*:hover{
+    /*border: 2px solid gray;*/
+}
+
+QPushButton{
+    color: white;
+    min-height: 2em;
+    min-width: 5em;;
+
+}
+
+QPushButton:pressed{
+    background: orange;
+}
+
+QLineEdit{
+    min-height: 2em;
+}
+
+QLabel{
+    border: 0px;
+}
+
+QLabel:hover{
+    border: 2px solid transparent;
+}
+
+QTabBar::tab{       /*tab selector/button*/
+    color: white;
+    background: transparent;
+    border: 10px solid transparent;
+    border-radius: 4px;
+}
+
+QTabBar::tab:selected{
+    background: orange;
+    border: 10px solid transparent;
+    border-radius: 4px;
+}
+
+QTabWidget::pane{
+  background: #262626;
+  /*margin: 5px;*/
+  border: 5px solid #262626;  /*truc relou*/
+  border-radius: 3px;
+  padding: 0.5em;
+}
+
+
+
+/*
+QGroupBox{
+    padding: 5px;
+    max-height: 3em;
+}*/
