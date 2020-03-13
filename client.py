@@ -137,22 +137,24 @@ class MainWindow(QMainWindow):
 
             self.cryptenger_win = mainWidgetOBJ(serverName=settings['adress'], Username=settings['firstName'])
             self.main_V_lyt.addWidget(self.cryptenger_win)
+            self.cryptenger_win.input_lne.returnPressed.connect(self.msgSend)
 
 
 
 
     def msgSend(self):
-        if self.dialog.text() != '':
+        if self.cryptenger_win.input_lne.text() != '':
             #self.history = self.history + '\n' + self.dialog.text()
             #self.messages.setPlainText(self.history)
-            server_connection.send(self.dialog.text().encode())
-            self.dialog.setText('')
+            server_connection.send(self.cryptenger_win.input_lne.text().encode())
+            self.cryptenger_win.input_lne.setText('')
 
-            if self.dialog.text() == "fin":
+            if self.cryptenger_win.input_lne.text() == "fin":
                 QCoreApplication.instance().quit
 
     def msgRecv(self, msg):
         print("Signal reçu")
+        print(msg)
 
 
 

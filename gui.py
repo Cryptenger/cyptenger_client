@@ -76,13 +76,11 @@ class mainWidgetOBJ(QWidget):
         self.main_grid_lyt = QGridLayout()
         self.setLayout(self.main_grid_lyt)
 
-        #objects
-        #lb = QLabel('test')
-        #self.main_grid_lyt.addWidget(lb)
 
         self.serverWidget()
         self.channelsWidget()
-        self.messagesWidget()
+        #self.messagesWidget()
+        self.setChannel('test')
         self.hudWidget()
         self.inputWidget()
 
@@ -121,7 +119,7 @@ class mainWidgetOBJ(QWidget):
 
         for i in range(len(self.channels_list_names)):
             button = QPushButton(str(self.channels_list_names[i]))
-            button.clicked.connect(functools.partial(self.changeChannel, channel=i))
+            button.clicked.connect(functools.partial(self.setChannel, channel=i))
 
             lyt = QHBoxLayout()
             lyt.addWidget(button)
@@ -144,21 +142,21 @@ class mainWidgetOBJ(QWidget):
 
 
 
-    def messagesWidget(self):
-        """
-        """
-        #objects
-        lb = QLabel('testsdfgdsfgsdgdsfg')
-
-        #layout
-        self.messages_lyt = QVBoxLayout()
-        self.messages_lyt.addWidget(lb)
-        #widget
-        self.messages_widget = QGroupBox()
-        self.messages_widget.setLayout(self.messages_lyt)
-
-        #add widget to main layout
-        self.main_grid_lyt.addWidget(self.messages_widget, 0, 1, 2, 1)
+    # def messagesWidget(self):
+    #     """
+    #     """
+    #     #objects
+    #     lb = QLabel('testsdfgdsfgsdgdsfg')
+    #
+    #     #layout
+    #     self.messages_lyt = QVBoxLayout()
+    #     self.messages_lyt.addWidget(lb)
+    #     #widget
+    #     self.messages_widget = QGroupBox()
+    #     self.messages_widget.setLayout(self.messages_lyt)
+    #
+    #     #add widget to main layout
+    #     self.main_grid_lyt.addWidget(self.messages_widget, 0, 1, 2, 1)
 
 
     def hudWidget(self):
@@ -183,17 +181,14 @@ class mainWidgetOBJ(QWidget):
         #add widget to main layout
         self.main_grid_lyt.addWidget(self.hud_widget, 2, 0, 1, 1)
 
-
-        pass
-
     def inputWidget(self):
         """
         """
         #objects
-        input_lne = QLineEdit()
+        self.input_lne = QLineEdit()
         #layout
         self.input_lyt = QHBoxLayout()
-        self.input_lyt.addWidget(input_lne)
+        self.input_lyt.addWidget(self.input_lne)
 
         #widget
         self.input_widget = QWidget()
@@ -202,7 +197,6 @@ class mainWidgetOBJ(QWidget):
         #add widget to main layout
         self.main_grid_lyt.addWidget(self.input_widget, 2, 1, 1, 1)
 
-        pass
 
     #***************************************************************************
     #       EVENTS
@@ -216,16 +210,25 @@ class mainWidgetOBJ(QWidget):
         print(self.height())
         self.settings = settingsOBJ(location=[self.pos().x(), self.pos().y()], scale=[self.width(), self.height()])
 
-    def changeChannel(self, channel):
+    def setChannel(self, channel):
         print("channel changed to : " + str(channel))
+        channel = channelMessagesOBJ(str(channel))
 
+        self.main_grid_lyt.addWidget(channel, 0, 1, 2, 1)
 
 
 class channelMessagesOBJ(QWidget):
     """docstring for channelMessagesOBJ."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, text, *args, **kwargs):
         super(channelMessagesOBJ, self).__init__(*args, **kwargs)
+        lyt = QVBoxLayout()
+        self.setLayout(lyt)
+
+        lb = QLabel(text)
+        lyt.addWidget(lb)
+
+
 
 
 
