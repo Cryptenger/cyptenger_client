@@ -12,15 +12,46 @@ class connectionWidgetOBJ(QWidget):
     def __init__(self, *args, **kwargs):
         super(connectionWidgetOBJ, self).__init__(*args, **kwargs)
         self.buildWidget()
+        self.setStyleSheet('''QWidget{margin-left: 20em; margin-right: 20em}''')
 
     def buildWidget(self):
-
+        #******************
         #layout
+        #******************
         self.main_V_lyt = QVBoxLayout()
         self.main_V_lyt.setAlignment(QtCore.Qt.AlignVCenter)
         self.setLayout(self.main_V_lyt)
 
+        #******************
         #objects
+        #******************
+        self.main_V_lyt.addStretch()
+
+        #flag
+        cryptenger_flag_lyt = QHBoxLayout()
+        cryptenger_flag_lyt.setAlignment(QtCore.Qt.AlignCenter)
+        # cryptenger_flag_lyt.addStretch()
+
+        cryptenger_logo = QLabel()
+        cryptenger_logo.setPixmap(QtGui.QPixmap(MAINDIR + "/assets/ico/cryptenger_icon.ico"))
+        cryptenger_flag_lyt.addWidget(cryptenger_logo)
+
+        #cryptenger_flag_lyt.addStretch()
+
+        cryptenger_title = QLabel('Cryptenger')
+        cryptenger_title.setFont(QtGui.QFont("Times", 20, QtGui.QFont.Bold))
+        cryptenger_flag_lyt.addWidget(cryptenger_title)
+
+        # cryptenger_flag_lyt.addStretch()
+
+        cryptenger_flag = QWidget()
+        cryptenger_flag.setLayout(cryptenger_flag_lyt)
+        cryptenger_flag.setFixedHeight(170)
+        self.main_V_lyt.addWidget(cryptenger_flag)
+
+        self.main_V_lyt.addStretch()
+
+        #input
         name1_lb = QLabel('First name : ')
         self.firstName_lne = QLineEdit()
         self.firstName_lne.setPlaceholderText('Boby')
@@ -51,25 +82,33 @@ class connectionWidgetOBJ(QWidget):
         self.main_V_lyt.addWidget(port_lb)
         self.main_V_lyt.addWidget(self.port_lne)
 
+        space_lb = QLabel('\n')
         self.start_btn = QPushButton('Connection')
-        self.start_btn.setStyleSheet("max-width: 5em; padding: 0em 5em 0 em 5em")
+        #self.start_btn.setStyleSheet("align-item: center")
+        self.main_V_lyt.addWidget(space_lb)
         self.main_V_lyt.addWidget(self.start_btn)
 
-
+        self.main_V_lyt.addStretch()
 
 
 class mainWidgetOBJ(QWidget):
     """docstring for mainWidgetOBJ."""
 
-    def __init__(self, Username, serverName, *args, **kwargs):
+    def __init__(self, parentObject, Username, serverName, *args, **kwargs):
         super(mainWidgetOBJ, self).__init__(*args, **kwargs)
         #variables
         self.leftColumnWidth = 300
         self.hudHeight = 65
         self.serverHeight = 150
         self.serverName = serverName
+        self.username = Username
         #
         self.buildWidget()
+        #the shortcut to close Cryptenger
+        self.quit_action = QAction(self)
+        self.quit_action.triggered.connect(functools.partial(self.quitCryptenger, toClose=parentObject))
+        self.quit_action.setShortcut('Ctrl+Q')
+        self.addAction(self.quit_action)
 
     def buildWidget(self):
         #layout
@@ -80,7 +119,7 @@ class mainWidgetOBJ(QWidget):
         self.serverWidget()
         self.channelsWidget()
         #self.messagesWidget()
-        self.setChannel('test')
+
         self.hudWidget()
         self.inputWidget()
 
@@ -116,8 +155,10 @@ class mainWidgetOBJ(QWidget):
         #objects
         self.channels_list_names = ["general", "presentation", "rank"]
         self.channels_list_widgets = []
+        self.channels = []
 
         for i in range(len(self.channels_list_names)):
+            #channel button
             button = QPushButton(str(self.channels_list_names[i]))
             button.clicked.connect(functools.partial(self.setChannel, channel=i))
 
@@ -130,6 +171,14 @@ class mainWidgetOBJ(QWidget):
             self.channels_list_widgets.append(widget)
             self.channels_lyt.addWidget(self.channels_list_widgets[i])
 
+            channel = channelMessagesOBJ(text=self.channels_list_names[i])
+            self.channels.append(channel)
+
+            """"""
+
+
+        #set the default channel
+        self.setChannel(channel=0)
 
         #widget
         self.channels_widget = QWidget()
@@ -142,30 +191,13 @@ class mainWidgetOBJ(QWidget):
 
 
 
-    # def messagesWidget(self):
-    #     """
-    #     """
-    #     #objects
-    #     lb = QLabel('testsdfgdsfgsdgdsfg')
-    #
-    #     #layout
-    #     self.messages_lyt = QVBoxLayout()
-    #     self.messages_lyt.addWidget(lb)
-    #     #widget
-    #     self.messages_widget = QGroupBox()
-    #     self.messages_widget.setLayout(self.messages_lyt)
-    #
-    #     #add widget to main layout
-    #     self.main_grid_lyt.addWidget(self.messages_widget, 0, 1, 2, 1)
-
-
     def hudWidget(self):
         """
         """
         #objects
         self.settings_btn = QPushButton(QtGui.QIcon(MAINDIR+"/assets/img/settings_icon.png"), '')
         self.settings_btn.clicked.connect(self.openSettings)
-        lb = QLabel('label')
+        lb = QLabel(self.username)
 
         #layout
         self.hud_lyt = QHBoxLayout()
@@ -183,6 +215,7 @@ class mainWidgetOBJ(QWidget):
 
     def inputWidget(self):
         """
+        the input line where we hit the message
         """
         #objects
         self.input_lne = QLineEdit()
@@ -203,6 +236,7 @@ class mainWidgetOBJ(QWidget):
     #***************************************************************************
 
     def openSettings(self):
+        """open the settings window creating an object defined in the class settingsOBJ"""
         print(('Hello world'))
         print(self.pos().x())
         print(self.pos().y())
@@ -212,31 +246,52 @@ class mainWidgetOBJ(QWidget):
 
     def setChannel(self, channel):
         print("channel changed to : " + str(channel))
-        channel = channelMessagesOBJ(str(channel))
+        # self.currentChannel = channelMessagesOBJ(text=self.channels_list_names[channel])
+        # pos = self.main_grid_lyt.getItemPosition(self.channels[0])
+        # print(pos)
+        # self.main_grid_lyt.itemAt(0, 1, 2, 1).widget().setParent(None)
+        self.main_grid_lyt.addWidget(self.channels[channel], 0, 1, 2, 1)
 
-        self.main_grid_lyt.addWidget(channel, 0, 1, 2, 1)
+    def addMessage(self, msgToAdd, channel):
+        print('loul')
+        self.channels[channel].messages.append(msgToAdd)
+        message = messagesOBJ(self.channels[channel].messages[channel])
 
+        #self.channels[channel].channel_lyt =
+        self.channels[channel].channel_lyt.addWidget(message)
+
+
+        #c'est le self qui pose pb : mettre l'objet en argument
+
+    def quitCryptenger(self, toClose):
+        """ to close Cryptenger """
+        toClose.close()
 
 class channelMessagesOBJ(QWidget):
     """docstring for channelMessagesOBJ."""
 
     def __init__(self, text, *args, **kwargs):
         super(channelMessagesOBJ, self).__init__(*args, **kwargs)
-        lyt = QVBoxLayout()
-        self.setLayout(lyt)
+        self.messages = []
+
+        self.channel_lyt = QVBoxLayout()
+        self.setLayout(self.channel_lyt)
 
         lb = QLabel(text)
-        lyt.addWidget(lb)
+        self.channel_lyt.addWidget(lb)
 
 
-
-
-
-class messagesOBJ(object):
+class messagesOBJ(QGroupBox):
     """docstring for messagesOBJ."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, message, *args, **kwargs):
         super(messagesOBJ, self).__init__(*args, **kwargs)
+
+        self.lyt = QHBoxLayout()
+        self.setLayout(self.lyt)
+
+        lb = QLabel(message)
+        self.lyt.addWidget(lb)
 
 
 

@@ -1,4 +1,4 @@
-import sys, random, os
+import sys, random, os, functools
 
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
@@ -27,8 +27,10 @@ class Worker(QtCore.QRunnable):
     '''
     Worker thread
     '''
-    def __init__(self):
+    def __init__(self, mainWindowTEST):
         super(Worker, self).__init__()
+
+        self.mainWindowTEST = mainWindowTEST
 
         self.signals = WorkerSignals()
 
@@ -44,6 +46,22 @@ class Worker(QtCore.QRunnable):
                 msg_received = msg_received.decode()
 
                 print(msg_received)
+
+                """TESTS"""
+                #add the message to the channel
+                try :
+                    self.mainWindowTEST.cryptenger_win.addMessage(msg_received)
+                    self.mainWindowTEST.cryptenger_win.addMessage('louliloul')
+
+                    print(self.mainWindowTEST.cryptenger_win.username)
+
+                    self.mainWindowTEST.msgRecv(msg_received)
+
+                except:
+                    pass
+
+
+
 
                 #appli.history = appli.history + msg_received + '\n'
                 #appli.messages.setPlainText(appli.history)
@@ -110,7 +128,7 @@ class MainWindow(QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        worker = Worker()
+        worker = Worker(mainWindowTEST=self)
         self.threadpool.start(worker)
 
     def connectAndRunSever(self):
@@ -135,32 +153,43 @@ class MainWindow(QMainWindow):
             #close connection widget
             self.connection_widget.close()
 
-            self.cryptenger_win = mainWidgetOBJ(serverName=settings['adress'], Username=settings['firstName'])
+            self.cryptenger_win = mainWidgetOBJ(
+                parentObject=self,  #to close all the mainWindow
+                serverName=settings['adress'],
+                Username=settings['firstName']
+                )
             self.main_V_lyt.addWidget(self.cryptenger_win)
             self.cryptenger_win.input_lne.returnPressed.connect(self.msgSend)
 
 
 
 
+
+
     def msgSend(self):
-        if self.cryptenger_win.input_lne.text() != '':
+        message = self.cryptenger_win.input_lne.text()
+        if message != '':
+            """quentin je fais quoi de ce bordel"""
             #self.history = self.history + '\n' + self.dialog.text()
             #self.messages.setPlainText(self.history)
-            server_connection.send(self.cryptenger_win.input_lne.text().encode())
+
+            server_connection.send(message.encode())
+            #add the message to the channel object
+            self.cryptenger_win.addMessage(msgToAdd=message, channel=0) #TEMP CHANNEL PR L INSTANT ON LE SET A LA MAIN
             self.cryptenger_win.input_lne.setText('')
 
-            if self.cryptenger_win.input_lne.text() == "fin":
+            if message == "fin":
                 QCoreApplication.instance().quit
+
 
     def msgRecv(self, msg):
         print("Signal reçu")
         print(msg)
+        self.cryptenger_win.addMessage(msgToAdd=msg, channel=0)
 
 
 
 if __name__ == "__main__":
-
-
 
     app = QApplication([])
     window = MainWindow()
