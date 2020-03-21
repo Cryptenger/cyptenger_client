@@ -27,10 +27,9 @@ class Worker(QtCore.QRunnable):
     '''
     Worker thread
     '''
-    def __init__(self, mainWindowTEST):
+    def __init__(self, parent):
         super(Worker, self).__init__()
-
-        self.mainWindowTEST = mainWindowTEST
+        self.parent = parent
 
         self.signals = WorkerSignals()
 
@@ -47,24 +46,20 @@ class Worker(QtCore.QRunnable):
 
                 print(msg_received)
 
-                """TESTS"""
-                #add the message to the channel
-                try :
-                    self.mainWindowTEST.cryptenger_win.addMessage(msg_received)
-                    self.mainWindowTEST.cryptenger_win.addMessage('louliloul')
+                #pour envoyer la liste des channels à mainWidgetOBJ
+                # print(msg_received == "['salon1', 'salon2', 'salon3']")
+                #
+                # if msg_received.startswith('<') != True:
+                #     print(msg_received.replace('\n', ' ') + 'TADATATATA')
 
-                    print(self.mainWindowTEST.cryptenger_win.username)
+                if msg_received.startswith('<history') and msg_received.endswith('</history>'):
+                    print('HOURRAAAAAA')
 
-                    self.mainWindowTEST.msgRecv(msg_received)
-
+                try:
+                    self.parent.msgRecv(msg = msg_received)
                 except:
                     pass
 
-
-
-
-                #appli.history = appli.history + msg_received + '\n'
-                #appli.messages.setPlainText(appli.history)
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -99,37 +94,12 @@ class MainWindow(QMainWindow):
         self.connection_widget.adresse_lne.setText('localhost')
 
 
-
-
-
-        self.history = ''
-
-        self.button = QPushButton("Send Message")
-        self.dialog = QLineEdit()
-        self.messages = QTextEdit()
-
-        self.button.clicked.connect(self.msgSend)
-        self.dialog.returnPressed.connect(self.msgSend)
-        self.messages.setReadOnly(True)
-
-        #test = mainWidgetOBJ()
-
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.messages)
-        self.layout.addWidget(self.dialog)
-        self.layout.addWidget(self.button)
-        #self.layout.addWidget(test)
-
         widget = QWidget()
         widget.setLayout(self.main_V_lyt)
         self.setCentralWidget(widget)
         self.show()
 
-        self.threadpool = QtCore.QThreadPool()
-        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        worker = Worker(mainWindowTEST=self)
-        self.threadpool.start(worker)
 
     def connectAndRunSever(self):
         settings = {
@@ -159,33 +129,76 @@ class MainWindow(QMainWindow):
                 Username=settings['firstName']
                 )
             self.main_V_lyt.addWidget(self.cryptenger_win)
-            self.cryptenger_win.input_lne.returnPressed.connect(self.msgSend)
+            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)
 
 
+
+
+
+
+            #on lance le serveur
+            self.threadpool = QtCore.QThreadPool()
+            print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+
+            worker = Worker(parent = self)
+            self.threadpool.start(worker)
 
 
 
 
     def msgSend(self):
-        message = self.cryptenger_win.input_lne.text()
+        message = self.cryptenger_win.inputUI.input_lne.text()
         if message != '':
-            """quentin je fais quoi de ce bordel"""
-            #self.history = self.history + '\n' + self.dialog.text()
-            #self.messages.setPlainText(self.history)
-
+            """select channel"""
+            try:        #PARCE QU IL FAUT SELECTIONNER UN CHANNEK D ABORD (plutard on le setera parr default)
+                channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
+                print("CHANNEL", +channel)
+            except:
+                pass
+            message = "<channel>" + str(channel) + "<channel>" + message
             server_connection.send(message.encode())
             #add the message to the channel object
-            self.cryptenger_win.addMessage(msgToAdd=message, channel=0) #TEMP CHANNEL PR L INSTANT ON LE SET A LA MAIN
-            self.cryptenger_win.input_lne.setText('')
+            """a rajouter : """
+            #self.cryptenger_win.addMessage(msgToAdd=message, channel=0) #TEMP CHANNEL PR L INSTANT ON LE SET A LA MAIN
+            self.cryptenger_win.inputUI.input_lne.setText('')   #c'est peut etre de la que vient le bug d'atom des multiples messages
 
             if message == "fin":
                 QCoreApplication.instance().quit
 
 
+
+            """ADD THE TEXT TO THE UI"""
+            self.cryptenger_win.addMessageToAChannel(msg = message, channel = channel)
+
+
     def msgRecv(self, msg):
         print("Signal reçu")
         print(msg)
-        self.cryptenger_win.addMessage(msgToAdd=msg, channel=0)
+
+        # test pour l'historique
+        if '<history>' in msg:
+            print('GAGNE\n')
+            list = msg.split('history')
+            print(list)
+            # list.remove(list[0])
+            # list.remove(list[-1])
+            print(list)
+            history = list[1]
+            print('history : : : : : ' + history)
+
+
+            self.cryptenger_win.historics.append(history)
+            #le nouvel historique
+            print(self.cryptenger_win.historics)
+
+
+        channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
+        print("channel --> " + str(channel))
+        self.cryptenger_win.addMessageToAChannel(msg = msg, channel = channel)
+
+
+
+
 
 
 
