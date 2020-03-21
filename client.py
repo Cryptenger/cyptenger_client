@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
                 channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
                 print("CHANNEL", +channel)
             except:
-                pass
+                channel = 0     #si on a pas encorer changé de channel en cliquant sur la listWidget
             message = "<channel>" + str(channel) + "<channel>" + message
             server_connection.send(message.encode())
             #add the message to the channel object
@@ -194,7 +194,8 @@ class MainWindow(QMainWindow):
 
         channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
         print("channel --> " + str(channel))
-        self.cryptenger_win.addMessageToAChannel(msg = msg, channel = channel)
+        #self.cryptenger_win.addMessageToAChannel(msg = msg, channel = channel)
+        self.cryptenger_win.channels[channel].addMessageToTheChannel(msg)
 
 
 

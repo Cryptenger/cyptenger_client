@@ -2,7 +2,7 @@ import sys, random, os, functools
 
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
-
+#from importlib import reload
 #root directory
 MAINDIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -136,7 +136,7 @@ class mainWidgetOBJ(QWidget):
         self.main_grid_lyt.addLayout(self.CHANNEL_lyt, 0, 1, 2, 1)
         self.channelsList.itemClicked.connect(functools.partial(self.setChannels, listWidget=self.channelsList))
 
-
+        self.setChannels(channelClicked='0')
     #***************************************************************************
     #       EVENTS
     #***************************************************************************
@@ -148,8 +148,11 @@ class mainWidgetOBJ(QWidget):
             self.channels[i].messages = self.historics[i]
 
 
-    def setChannels(self,  listWidget, channelClicked=''):          #on switch de channel des qu'on clique sur un item de la liste des channels
-        channelToSet_index = self.getCurrrentIndex(listWidget)
+    def setChannels(self,  listWidget=None, channelClicked=''):          #on switch de channel des qu'on clique sur un item de la liste des channels
+        if channelClicked == '':        #pour mettre le channel 0 par defaut
+            channelToSet_index = self.getCurrrentIndex(listWidget)
+        else:               #toutes les autres fois (a partir du moment ou on a changé de channel au moins une fois)
+            channelToSet_index = int(channelClicked)
         for i in reversed(range(self.CHANNEL_lyt.count())):
             self.CHANNEL_lyt.itemAt(i).widget().setParent(None)
 
@@ -163,6 +166,7 @@ class mainWidgetOBJ(QWidget):
 
 
     def addMessageToAChannel(self, msg, channel):
+
         self.channels[channel].addMessageToTheChannel(msg)
 
 
@@ -300,6 +304,7 @@ class channelOBJ(QWidget):
         self.channel_lyt.addWidget(label)
 
         print(message)
+
 
 
 class messagesOBJ(QGroupBox):
