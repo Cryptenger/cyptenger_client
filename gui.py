@@ -30,23 +30,17 @@ class connectionWidgetOBJ(QWidget):
         #flag
         cryptenger_flag_lyt = QHBoxLayout()
         cryptenger_flag_lyt.setAlignment(QtCore.Qt.AlignCenter)
-        # cryptenger_flag_lyt.addStretch()
 
         cryptenger_logo = QLabel()
-        cryptenger_logo.setPixmap(QtGui.QPixmap(MAINDIR + "/assets/ico/cryptenger_icon.ico"))
+        pixmap = QtGui.QPixmap(MAINDIR + "/assets/img/cryptenger_flag.jpg")
+        pixmap = pixmap.scaled(1000, 200, aspectRatioMode=QtCore.Qt.KeepAspectRatioByExpanding)
+        cryptenger_logo.setPixmap(pixmap)
         cryptenger_flag_lyt.addWidget(cryptenger_logo)
-
-        #cryptenger_flag_lyt.addStretch()
-
-        cryptenger_title = QLabel('Cryptenger')
-        cryptenger_title.setFont(QtGui.QFont("Times", 20, QtGui.QFont.Bold))
-        cryptenger_flag_lyt.addWidget(cryptenger_title)
-
-        # cryptenger_flag_lyt.addStretch()
 
         cryptenger_flag = QWidget()
         cryptenger_flag.setLayout(cryptenger_flag_lyt)
         cryptenger_flag.setFixedHeight(170)
+        cryptenger_flag.setStyleSheet("""border-color: transparent""")
         self.main_V_lyt.addWidget(cryptenger_flag)
 
         self.main_V_lyt.addStretch()
