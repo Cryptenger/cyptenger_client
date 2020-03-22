@@ -8,12 +8,7 @@ from gui import mainWidgetOBJ, connectionWidgetOBJ
 import socket
 import select
 
-host = 'localhost'
-port = 25565
 
-server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_connection.connect((host, port))
-print("La connexion avec le serveur a été établie sur le port", port)
 #Fin de la connexion
 
 #root directory
@@ -36,7 +31,7 @@ class Worker(QtCore.QRunnable):
     @QtCore.pyqtSlot()
     def run(self):
         while True:
-            server_message, wlist, xlist = select.select([server_connection], [], [], 0.05)
+            server_message, wlist, xlist = select.select([self.parent.server_connection], [], [], 0.05)
             #print(MainWindow().history)
             if len(server_message) != 0:
                 # Client est de type socket
@@ -44,7 +39,7 @@ class Worker(QtCore.QRunnable):
                 # Peut planter si le message contient des caractères spéciaux
                 msg_received = msg_received.decode()
 
-                print(msg_received)
+                # print(msg_received)
 
                 #pour envoyer la liste des channels à mainWidgetOBJ
                 # print(msg_received == "['salon1', 'salon2', 'salon3']")
@@ -58,7 +53,7 @@ class Worker(QtCore.QRunnable):
                 try:
                     self.parent.msgRecv(msg = msg_received)
                 except:
-                    pass
+                    print('FAILED')
 
 
 class MainWindow(QMainWindow):
@@ -87,9 +82,9 @@ class MainWindow(QMainWindow):
         self.main_V_lyt.addWidget(self.connection_widget)
 
         """TEMP PARCE QUE RELOU"""
-        self.connection_widget.firstName_lne.setText('Cosius')
-        self.connection_widget.secondName_lne.setText('KTN')
-        self.connection_widget.thirdName_lne.setText('Moi')
+        self.connection_widget.firstName_lne.setText('Alfiory')
+        self.connection_widget.secondName_lne.setText('Samper')
+        self.connection_widget.thirdName_lne.setText('Cosius')
         self.connection_widget.port_lne.setText('25565')
         self.connection_widget.adresse_lne.setText('localhost')
 
@@ -98,7 +93,6 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.main_V_lyt)
         self.setCentralWidget(widget)
         self.show()
-
 
 
     def connectAndRunSever(self):
@@ -129,21 +123,19 @@ class MainWindow(QMainWindow):
                 Username=settings['firstName']
                 )
             self.main_V_lyt.addWidget(self.cryptenger_win)
-            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)
+            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
 
+            #creating a connection
+            self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_connection.connect((settings['adress'], int(settings['port'])))
+            print("Connection established on the port", settings['port'])
 
-
-
-
-
-            #on lance le serveur
+            #starting server
             self.threadpool = QtCore.QThreadPool()
             print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
             worker = Worker(parent = self)
             self.threadpool.start(worker)
-
-
 
 
     def msgSend(self):
@@ -152,11 +144,11 @@ class MainWindow(QMainWindow):
             """select channel"""
             try:        #PARCE QU IL FAUT SELECTIONNER UN CHANNEK D ABORD (plutard on le setera parr default)
                 channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
-                print("CHANNEL", +channel)
+                # print("CHANNEL", +channel)
             except:
                 channel = 0     #si on a pas encorer changé de channel en cliquant sur la listWidget
             message = "<channel>" + str(channel) + "<channel>" + message
-            server_connection.send(message.encode())
+            self.server_connection.send(message.encode())
             #add the message to the channel object
             """a rajouter : """
             #self.cryptenger_win.addMessage(msgToAdd=message, channel=0) #TEMP CHANNEL PR L INSTANT ON LE SET A LA MAIN
@@ -179,12 +171,12 @@ class MainWindow(QMainWindow):
         if '<history>' in msg:
             print('GAGNE\n')
             list = msg.split('history')
-            print(list)
+            # print(list)
             # list.remove(list[0])
             # list.remove(list[-1])
-            print(list)
+            # print(list)
             history = list[1]
-            print('history : : : : : ' + history)
+            # print('history : : : : : ' + history)
 
 
             self.cryptenger_win.historics.append(history)
@@ -193,7 +185,7 @@ class MainWindow(QMainWindow):
 
 
         channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
-        print("channel --> " + str(channel))
+        # print("channel --> " + str(channel))
         #self.cryptenger_win.addMessageToAChannel(msg = msg, channel = channel)
         self.cryptenger_win.channels[channel].addMessageToTheChannel(msg)
 

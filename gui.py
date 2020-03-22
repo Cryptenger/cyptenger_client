@@ -166,7 +166,6 @@ class mainWidgetOBJ(QWidget):
 
 
     def addMessageToAChannel(self, msg, channel):
-
         self.channels[channel].addMessageToTheChannel(msg)
 
 
@@ -256,10 +255,10 @@ class channelsListOBJ(QListWidget):
 
     def buildChannelsList(self):
         print('hello world ;-)')
-        print(self.channelsSENT)
+        # print(self.channelsSENT)
 
         for i in range(len(self.channelsSENT)):
-            print(self.channelsSENT[i])
+            # print(self.channelsSENT[i])
             #item
             item = QListWidgetItem(str(i))  #le i est pour avoir un index pour sélectionner plus tard le bon channel quand on cliquera dessus
             #widget
@@ -303,7 +302,7 @@ class channelOBJ(QWidget):
         label = QLabel(message)
         self.channel_lyt.addWidget(label)
 
-        print(message)
+        # print(message)
 
 
 
