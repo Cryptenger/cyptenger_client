@@ -58,6 +58,8 @@ class Worker(QtCore.QObject):#QRunnable):
                     print('FAILED')
 
 
+
+
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
