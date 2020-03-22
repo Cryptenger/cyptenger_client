@@ -156,7 +156,7 @@ class mainWidgetOBJ(QWidget):
 
 
     def getCurrrentIndex(self, listWidget):
-        return 0; # COSISUS !!! ICII !!! HÉHOOOOO !!!
+        #return 0; # COSISUS !!! ICII !!! HÉHOOOOO !!!
         return int(listWidget.currentItem().text())
 
 

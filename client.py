@@ -193,7 +193,14 @@ class MainWindow(QMainWindow):
             print(self.cryptenger_win.historics)
 
 
-        channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
+        #channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
+        # channel = self.cryptenger_win.channelsList.indexFromItem(self.cryptenger_win.channelsList.currentItem())#currentItem()#.text()
+        try:    
+            channel = self.cryptenger_win.channelsList.currentItem().text()#toolTip()#.toString()
+            channel = int(channel)
+        except:
+            channel = 0
+        print("CHANNEL : " + str(channel))
         # print("channel --> " + str(channel))
 
         self.cryptenger_win.addMessageToAChannel(msg, channel)
