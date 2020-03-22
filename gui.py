@@ -327,6 +327,20 @@ class messagesOBJ(QGroupBox):
         pseudo = "Pseudo"
         pseudo_lb = QLabel(pseudo)
         pseudo_lb.setFixedWidth(100)
+
+        #tests color        PLUS TARD UNE COULEURR PAR USER (=REMEMBER)
+        pseudo_lb.setAutoFillBackground(True)
+        color = QtGui.QColor(random.randint(0, 250), random.randint(0, 250), random.randint(0, 250))
+        alpha = 140
+        values = "{r}, {g}, {b}, {a}".format(
+            r = color.red(),
+            g = color.green(),
+            b = color.blue(),
+            a = alpha
+            )
+        pseudo_lb.setStyleSheet("QLabel{color: rgba("+values+")}")
+
+
         self.lyt.addWidget(pseudo_lb)
         #message
         message_lb = QLabel(message)

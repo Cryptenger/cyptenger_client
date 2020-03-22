@@ -5,11 +5,7 @@ from PyQt5.QtWidgets import *
 from gui import mainWidgetOBJ, connectionWidgetOBJ
 
 #Connexion au serveur
-import socket
-import select
-
-
-#Fin de la connexion
+import socket, select
 
 #root directory
 MAINDIR = os.path.dirname(os.path.realpath(__file__))
@@ -59,7 +55,7 @@ class MainWindow(QMainWindow):
         self.initWindow()
         self.buildWindow()
 
-    def initWindow(self):
+    def initWindow(self):                                                       #les settings de la fenêtre principale
         self.setGeometry(0, 0, 1280, 720)
         self.setWindowTitle('Cryptenger')
         self.setWindowIcon(QtGui.QIcon(MAINDIR + '/assets/ico/cryptenger_icon.ico'))
@@ -67,11 +63,11 @@ class MainWindow(QMainWindow):
         with open(MAINDIR + '/assets/css/style.css') as style:
             self.setStyleSheet(style.read())
 
-    def buildWindow(self):
-        #layout
+    def buildWindow(self):                                                      #le contenu de la fenêtre principale
+        #layout de la fenêtre principale
         self.main_V_lyt = QVBoxLayout()
 
-        #connection
+        #fenêtre de connection
         self.connection_widget = connectionWidgetOBJ()
         self.connection_widget.start_btn.clicked.connect(self.connectAndRunSever)
         self.main_V_lyt.addWidget(self.connection_widget)
@@ -113,7 +109,7 @@ class MainWindow(QMainWindow):
             self.connection_widget.close()
 
             self.cryptenger_win = mainWidgetOBJ(
-                parentObject=self,  #to close all the mainWindow
+                parentObject=self,                                              #pour fermer toute la mainWindow
                 serverName=settings['adress'],
                 Username=settings['firstName']
                 )
