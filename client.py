@@ -17,11 +17,12 @@ MAINDIR = os.path.dirname(os.path.realpath(__file__))
 class WorkerSignals(QtCore.QObject):
     result = QtCore.pyqtSignal(object)
 
-
-class Worker(QtCore.QRunnable):
+class Worker(QtCore.QObject):#QRunnable):
     '''
     Worker thread
     '''
+    received_message = QtCore.pyqtSignal(str)
+
     def __init__(self, parent):
         super(Worker, self).__init__()
         self.parent = parent
@@ -51,7 +52,8 @@ class Worker(QtCore.QRunnable):
                     print('HOURRAAAAAA')
 
                 try:
-                    self.parent.msgRecv(msg = msg_received)
+                    #self.parent.msgRecv(msg = msg_received)
+                    self.received_message.emit(msg_received)
                 except:
                     print('FAILED')
 
@@ -134,8 +136,12 @@ class MainWindow(QMainWindow):
             self.threadpool = QtCore.QThreadPool()
             print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-            worker = Worker(parent = self)
-            self.threadpool.start(worker)
+            self.worker = Worker(parent = self)
+            self.workerThread = QtCore.QThread()
+            self.workerThread.started.connect(self.worker.run) #r Start the Run function
+            self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
+            self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
+            self.workerThread.start()
 
 
     def msgSend(self):
@@ -157,14 +163,15 @@ class MainWindow(QMainWindow):
             if message == "fin":
                 QCoreApplication.instance().quit
 
-
-
             """ADD THE TEXT TO THE UI"""
+            print(channel)
             self.cryptenger_win.addMessageToAChannel(msg = message, channel = channel)
+
+            print(self.cryptenger_win)
 
 
     def msgRecv(self, msg):
-        print("Signal reçu")
+        print("Message reçu")
         print(msg)
 
         # test pour l'historique
@@ -186,8 +193,8 @@ class MainWindow(QMainWindow):
 
         channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
         # print("channel --> " + str(channel))
-        #self.cryptenger_win.addMessageToAChannel(msg = msg, channel = channel)
-        self.cryptenger_win.channels[channel].addMessageToTheChannel(msg)
+
+        self.cryptenger_win.addMessageToAChannel(msg, channel)
 
 
 
