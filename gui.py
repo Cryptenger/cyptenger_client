@@ -1,4 +1,4 @@
-import sys, random, os, functools
+import sys, random, os, functools, datetime
 
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
@@ -249,8 +249,6 @@ class channelsListOBJ(QListWidget):
         self.buildChannelsList()
 
     def buildChannelsList(self):
-        print('hello world ;-)')
-        # print(self.channelsSENT)
 
         for i in range(len(self.channelsSENT)):
             # print(self.channelsSENT[i])
@@ -276,28 +274,36 @@ class channelsListOBJ(QListWidget):
 
 
 
-class channelOBJ(QWidget):
+class channelOBJ(QScrollArea):
     """docstring for channelOBJ."""
 
     def __init__(self, text, *args, **kwargs):
         super(channelOBJ, self).__init__(*args, **kwargs)
         self.messages = []
 
+        #layout
         self.channel_lyt = QVBoxLayout()
-        self.setLayout(self.channel_lyt)
+        #self.setLayout(self.channel_lyt)
 
+        #widget
+        widget = QWidget()
+        widget.setLayout(self.channel_lyt)
 
+        #scroll widget
+        self.setWidget(widget)
+        self.setWidgetResizable(True)
 
+        #debug label
         lb = QLabel(str(text))
         self.channel_lyt.addWidget(lb)
 
 
 
+    #add message to the channel
     def addMessageToTheChannel(self, message):
-        label = QLabel(message)
-        self.channel_lyt.addWidget(label)
+        message = messagesOBJ(message=message)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
+        self.channel_lyt.addWidget(message)
 
-        # print(message)
 
 
 
@@ -306,12 +312,25 @@ class messagesOBJ(QGroupBox):
 
     def __init__(self, message, *args, **kwargs):
         super(messagesOBJ, self).__init__(*args, **kwargs)
-
+        #layout
         self.lyt = QHBoxLayout()
         self.setLayout(self.lyt)
 
-        lb = QLabel(message)
-        self.lyt.addWidget(lb)
+        #hour
+        hour = '00:00'
+        hour = datetime.datetime.now()
+        hour = str(hour.strftime("%H")) + ':' + str(hour.strftime("%M"))
+        hour_lb = QLabel(hour)
+        hour_lb.setFixedWidth(50)
+        self.lyt.addWidget(hour_lb)
+        #pseudo
+        pseudo = "Pseudo"
+        pseudo_lb = QLabel(pseudo)
+        pseudo_lb.setFixedWidth(100)
+        self.lyt.addWidget(pseudo_lb)
+        #message
+        message_lb = QLabel(message)
+        self.lyt.addWidget(message_lb)
 
 
 class inputOBJ(QWidget):

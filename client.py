@@ -40,13 +40,6 @@ class Worker(QtCore.QObject):#QRunnable):
                 # Peut planter si le message contient des caractères spéciaux
                 msg_received = msg_received.decode()
 
-                # print(msg_received)
-
-                #pour envoyer la liste des channels à mainWidgetOBJ
-                # print(msg_received == "['salon1', 'salon2', 'salon3']")
-                #
-                # if msg_received.startswith('<') != True:
-                #     print(msg_received.replace('\n', ' ') + 'TADATATATA')
 
                 if msg_received.startswith('<history') and msg_received.endswith('</history>'):
                     print('HOURRAAAAAA')
@@ -65,8 +58,6 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.initWindow()
         self.buildWindow()
-
-
 
     def initWindow(self):
         self.setGeometry(0, 0, 1280, 720)
@@ -166,11 +157,7 @@ class MainWindow(QMainWindow):
                 QCoreApplication.instance().quit
 
             """ADD THE TEXT TO THE UI"""
-            print(channel)
-            self.cryptenger_win.addMessageToAChannel(msg = message, channel = channel)
-
-            print(self.cryptenger_win)
-
+            #self.cryptenger_win.addMessageToAChannel(msg = message, channel = channel)
 
     def msgRecv(self, msg):
         print("Message reçu")
@@ -192,18 +179,13 @@ class MainWindow(QMainWindow):
             #le nouvel historique
             print(self.cryptenger_win.historics)
 
+        try:                                                                        #récupère le channel actuel depuis le current item sélectionné de la QListWidget des channels
+                channel = self.cryptenger_win.channelsList.currentItem().text()
+                channel = int(channel)
+        except:                                                                     #si on a pas encore sélectionné de channel (qu'on utilise le channel par défaut, après le lancement) on utilise le channel 0 lancé par défaut. Car la ligne du dessus a besoin qu'un item de la liste ait été sélectionné au moins une fois.
+                channel = 0
 
-        #channel = self.cryptenger_win.getCurrrentIndex(listWidget=self.cryptenger_win.channelsList)
-        # channel = self.cryptenger_win.channelsList.indexFromItem(self.cryptenger_win.channelsList.currentItem())#currentItem()#.text()
-        try:    
-            channel = self.cryptenger_win.channelsList.currentItem().text()#toolTip()#.toString()
-            channel = int(channel)
-        except:
-            channel = 0
-        print("CHANNEL : " + str(channel))
-        # print("channel --> " + str(channel))
-
-        self.cryptenger_win.addMessageToAChannel(msg, channel)
+        self.cryptenger_win.addMessageToAChannel(msg, channel)                  #ajoute le message à l'UI
 
 
 
