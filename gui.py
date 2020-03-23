@@ -316,6 +316,14 @@ class messagesOBJ(QGroupBox):
         self.lyt = QHBoxLayout()
         self.setLayout(self.lyt)
 
+        #colors
+        color = [random.randint(0, 255), random.randint(100, 255), random.randint(200, 255)]
+        values = "{h}, {s}, {v}".format(
+        h = color[0],
+        s = color[1],
+        v = color[2],
+        )
+
         #hour
         hour = '00:00'
         hour = datetime.datetime.now()
@@ -323,22 +331,22 @@ class messagesOBJ(QGroupBox):
         hour_lb = QLabel(hour)
         hour_lb.setFixedWidth(50)
         self.lyt.addWidget(hour_lb)
+
         #pseudo
         pseudo = "Pseudo"
         pseudo_lb = QLabel(pseudo)
         pseudo_lb.setFixedWidth(100)
-
-        #tests color        PLUS TARD UNE COULEURR PAR USER (=REMEMBER)
         pseudo_lb.setAutoFillBackground(True)
-        color = QtGui.QColor(random.randint(0, 250), random.randint(0, 250), random.randint(0, 250))
-        alpha = 140
-        values = "{r}, {g}, {b}, {a}".format(
-            r = color.red(),
-            g = color.green(),
-            b = color.blue(),
-            a = alpha
-            )
-        pseudo_lb.setStyleSheet("QLabel{color: rgba("+values+")}")
+        pseudo_lb.setStyleSheet("QLabel{color: hsv("+values+")}")
+
+        #circle
+        circle = QLabel()
+        circle.setStyleSheet("QLabel{border: 2px solid transparent;border-radius: 25px;min-height: 20px;min-width: 20px;background-color: hsv("+values+");}")
+        circle.setFixedWidth(50)
+        circle.setFixedHeight(50)
+        self.lyt.addWidget(circle)
+
+
 
 
         self.lyt.addWidget(pseudo_lb)
