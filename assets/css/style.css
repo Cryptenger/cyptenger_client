@@ -59,7 +59,19 @@ QTabWidget::pane{
   padding: 0.5em;
 }
 
+QScrollBar:vertical{            /* le fond*/
+  border: 0px;  /* border autour du truc qu'on tire*/
+  background: #262626;
+}
 
+QScrollBar::handle:vertical{    /*le truc qu'on tire*/
+  background: #323232;
+  border-radius: 4px;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical{   /*le reste des petits points sur le fond*/
+  background: #262626;
+}
 
 /*
 QGroupBox{

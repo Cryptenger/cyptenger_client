@@ -317,7 +317,7 @@ class messagesOBJ(QGroupBox):
         self.setLayout(self.lyt)
 
         #colors
-        color = [random.randint(0, 255), random.randint(100, 255), random.randint(200, 255)]
+        color = [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
         values = "{h}, {s}, {v}".format(
         h = color[0],
         s = color[1],
