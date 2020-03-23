@@ -1,4 +1,4 @@
-import sys, random, os, functools, datetime
+import sys, random, os, functools, datetime, json
 
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
@@ -31,9 +31,10 @@ class connectionWidgetOBJ(QWidget):
         cryptenger_flag_lyt = QHBoxLayout()
         cryptenger_flag_lyt.setAlignment(QtCore.Qt.AlignCenter)
 
-        cryptenger_logo = QLabel()
+        cryptenger_logo = QLabel("Cryptenger")
         pixmap = QtGui.QPixmap(MAINDIR + "/assets/img/cryptenger_flag.jpg")
         pixmap = pixmap.scaled(1000, 200, aspectRatioMode=QtCore.Qt.KeepAspectRatioByExpanding)
+        # cryptenger_logo.setObjectName('Pixmap')
         cryptenger_logo.setPixmap(pixmap)
         cryptenger_flag_lyt.addWidget(cryptenger_logo)
 
@@ -315,6 +316,12 @@ class messagesOBJ(QGroupBox):
         #layout
         self.lyt = QHBoxLayout()
         self.setLayout(self.lyt)
+        self.setFixedHeight(50)
+
+        #messageProcessing
+        messageJSON = json.loads(message)
+        # print(type(messageJSON))
+        messageJSON =  messageJSON["messageType"]
 
         #colors
         color = [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
@@ -325,19 +332,16 @@ class messagesOBJ(QGroupBox):
         )
 
         #hour
-        hour = '00:00'
-        hour = datetime.datetime.now()
-        hour = str(hour.strftime("%H")) + ':' + str(hour.strftime("%M"))
-        hour_lb = QLabel(hour)
+        hour_lb = QLabel(messageJSON["date"]["hour"])
         hour_lb.setFixedWidth(50)
         self.lyt.addWidget(hour_lb)
 
         #pseudo
-        pseudo = "Pseudo"
-        pseudo_lb = QLabel(pseudo)
+        pseudo_lb = QLabel(messageJSON["username"])
         pseudo_lb.setFixedWidth(100)
         pseudo_lb.setAutoFillBackground(True)
         pseudo_lb.setStyleSheet("QLabel{color: hsv("+values+")}")
+        self.lyt.addWidget(pseudo_lb)
 
         #circle
         circle = QLabel()
@@ -346,12 +350,8 @@ class messagesOBJ(QGroupBox):
         circle.setFixedHeight(50)
         self.lyt.addWidget(circle)
 
-
-
-
-        self.lyt.addWidget(pseudo_lb)
         #message
-        message_lb = QLabel(message)
+        message_lb = QLabel(messageJSON["message"])
         self.lyt.addWidget(message_lb)
 
 
