@@ -336,6 +336,21 @@ class messagesOBJ(QGroupBox):
         hour_lb.setFixedWidth(50)
         self.lyt.addWidget(hour_lb)
 
+        #circle
+        circle = QLabel()
+
+        # painter = QtGui.QPainter(circle)
+        # painter.setPen(QtGui.QPen(QtGui.QColor(1, 1, 1), 5, QtCore.Qt.SolidLine))
+        # painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 255, 255), QtCore.Qt.SolidPattern))
+        # painter.begin(circle)
+        # painter.drawRect(200, 200, 200, 200)
+
+
+        circle.setFixedWidth(30)
+        circle.setFixedHeight(30)
+        self.lyt.addWidget(circle)
+        circle.setStyleSheet("QLabel{border: 2px solid transparent;border-radius: 25px;min-height: 20px;min-width: 20px;background-color: hsv("+values+");}")
+
         #pseudo
         pseudo_lb = QLabel(messageJSON["username"])
         pseudo_lb.setFixedWidth(100)
@@ -343,12 +358,6 @@ class messagesOBJ(QGroupBox):
         pseudo_lb.setStyleSheet("QLabel{color: hsv("+values+")}")
         self.lyt.addWidget(pseudo_lb)
 
-        #circle
-        circle = QLabel()
-        circle.setStyleSheet("QLabel{border: 2px solid transparent;border-radius: 25px;min-height: 20px;min-width: 20px;background-color: hsv("+values+");}")
-        circle.setFixedWidth(50)
-        circle.setFixedHeight(50)
-        self.lyt.addWidget(circle)
 
         #message
         message_lb = QLabel(messageJSON["message"])
