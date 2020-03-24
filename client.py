@@ -1,5 +1,5 @@
 import sys, random, os, functools, datetime, json
-
+import time
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from gui import mainWidgetOBJ, connectionWidgetOBJ
@@ -132,14 +132,7 @@ class MainWindow(QMainWindow):
             #close connection widget
             self.connection_widget.close()
 
-            self.cryptenger_win = mainWidgetOBJ(
-                parentObject=self,                                              #pour fermer toute la mainWindow
-                serverName=self.settings['adress'],
-                Username=self.settings['firstName']
-                )
-            self.main_V_lyt.addWidget(self.cryptenger_win)
-            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
-
+            #BUILD SERVER
             #creating a connection
             self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server_connection.connect((self.settings['adress'], int(self.settings['port'])))
@@ -156,6 +149,14 @@ class MainWindow(QMainWindow):
             self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
             self.workerThread.start()
 
+            #BUILD MAIN WIDGET
+            self.cryptenger_win = mainWidgetOBJ(
+            parentObject=self,                                              #pour fermer toute la mainWindow
+            serverName=self.settings['adress'],
+            Username=self.settings['firstName'],
+            )
+            self.main_V_lyt.addWidget(self.cryptenger_win)
+            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
 
     def msgSend(self):
         #message
@@ -208,7 +209,8 @@ class MainWindow(QMainWindow):
 
         if "channelList" in message_in_python:
             print("on a ici la liste des channels !")
-            print(message_in_python["channelList"])
+            print(message_in_python["channelList"][0])
+            self.channelList = message_in_python["channelList"]
 
         elif "history" in message_in_python:
             print("on a ici l'historique")
@@ -219,7 +221,9 @@ class MainWindow(QMainWindow):
                 channel = json.loads(channel)           #json to python
                 channel = channel["messageType"]['channel']     #récupèr le channel
                 self.cryptenger_win.addMessageToAChannel(message, int(channel))
-
+            print("scroll down")
+            # self.cryptenger_win.channels[channel].scrollDownFar()
+            print("scroll down")
         elif "messageType" in message_in_python:
             print("on a ici un message !")
 

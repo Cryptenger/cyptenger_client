@@ -140,17 +140,18 @@ class mainWidgetOBJ(QWidget):
         for i in range(len(self.channelsNames)):
             channel = channelOBJ(text=str(i))
             self.channels.append(channel)
-            self.channels[i].messages = self.historics[i]
 
 
     def setChannels(self,  listWidget=None, channelClicked=''):          #on switch de channel des qu'on clique sur un item de la liste des channels
         if channelClicked == '':        #pour mettre le channel 0 par defaut
             channelToSet_index = self.getCurrrentIndex(listWidget)
+            self.channels[channelToSet_index].scrollDown()
         else:               #toutes les autres fois (a partir du moment ou on a changé de channel au moins une fois)
             channelToSet_index = int(channelClicked)
         for i in reversed(range(self.CHANNEL_lyt.count())):
             self.CHANNEL_lyt.itemAt(i).widget().setParent(None)
 
+        self.channels[channelToSet_index].scrollDown()
         index = self.main_grid_lyt.indexOf(self.channels[channelToSet_index])
         # print('INDEX ' + str(index))
         self.CHANNEL_lyt.addWidget(self.channels[channelToSet_index])
@@ -280,33 +281,48 @@ class channelOBJ(QScrollArea):
 
     def __init__(self, text, *args, **kwargs):
         super(channelOBJ, self).__init__(*args, **kwargs)
-        self.messages = []
-
+        self.messagesList = []
         #layout
-        self.channel_lyt = QVBoxLayout()
-        #self.setLayout(self.channel_lyt)
+        main_lyt = QVBoxLayout()                                                #layout contenant les deux autres layouts
+        #messages layout
+        self.channel_lyt = QVBoxLayout()                                        #premier layout : contient les messages
+        main_lyt.addLayout(self.channel_lyt)
+        #focus_lyt
+        focus_lyt = QVBoxLayout()                                               #deuxième layout : on met un label dessus et on focusle label
+        main_lyt.addLayout(focus_lyt)
+        self.space_lb = QLabel('')
+        self.space_lb.setFont(QtGui.QFont('SansSerif', 30))
+        focus_lyt.addWidget(self.space_lb)
 
         #widget
         widget = QWidget()
-        widget.setLayout(self.channel_lyt)
-
-        #scroll widget
+        widget.setLayout(main_lyt)
         self.setWidget(widget)
         self.setWidgetResizable(True)
-
-        #debug label
-        lb = QLabel(str(text))
-        self.channel_lyt.addWidget(lb)
-
-
 
     #add message to the channel
     def addMessageToTheChannel(self, message):
         message = messagesOBJ(message=message)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
         self.channel_lyt.addWidget(message)
+        #scroll focus toujours le bas de la liste des messages
+
+        self.messagesList.append(message)
+        print(self.messagesList)
+
+        self.scrollDown()
 
 
 
+    def scrollDown(self):
+        self.ensureWidgetVisible(self.space_lb)     #, 500, 200
+        # self.ensureWidgetVisible(self.messagesList[-1])
+        # self.ensureVisible(0, 50, 0, 0)
+        print("scroll")
+
+
+    def scrollDownFar(self):
+        self.ensureWidgetVisible(self.messagesList[-1].message_lb)
+        print(self.messagesList[-1].index())
 
 class messagesOBJ(QGroupBox):
     """docstring for messagesOBJ."""
@@ -360,8 +376,8 @@ class messagesOBJ(QGroupBox):
 
 
         #message
-        message_lb = QLabel(messageJSON["message"])
-        self.lyt.addWidget(message_lb)
+        self.message_lb = QLabel(messageJSON["message"])
+        self.lyt.addWidget(self.message_lb)
 
 
 class inputOBJ(QWidget):
