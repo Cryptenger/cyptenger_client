@@ -136,21 +136,23 @@ class mainWidgetOBJ(QWidget):
     #       EVENTS
     #***************************************************************************
 
-    def buildChannels(self):        #on initialise tous les channels au lancement de Cryptenger (on rajoute tous les messages)
+    def buildChannels(self):
+        """on initialise tous les channels au lancement de Cryptenger"""
         for i in range(len(self.channelsNames)):
             channel = channelOBJ(text=str(i))
             self.channels.append(channel)
 
 
 
-    def setChannels(self,  listWidget=None, channelClicked=''):          #on switch de channel des qu'on clique sur un item de la liste des channels
+    def setChannels(self,  listWidget=None, channelClicked=''):          #
+        """on switch de channel des qu'on clique sur un item de la liste des channels"""
         if channelClicked == '':        #pour mettre le channel 0 par defaut
             channelToSet_index = self.getCurrrentIndex(listWidget)
-            self.channels[channelToSet_index].scrollDown()
+            self.channels[channelToSet_index].scrollDown()                  #A VOIR
         else:               #toutes les autres fois (a partir du moment ou on a changé de channel au moins une fois)
             channelToSet_index = int(channelClicked)
 
-        self.channels[channelToSet_index].scrollDown()
+        self.channels[channelToSet_index].scrollDown()                      #A VOIR
 
         for i in reversed(range(self.CHANNEL_lyt.count())):
             self.CHANNEL_lyt.itemAt(i).widget().setParent(None)
@@ -159,15 +161,39 @@ class mainWidgetOBJ(QWidget):
         # print('INDEX ' + str(index))
         self.CHANNEL_lyt.addWidget(self.channels[channelToSet_index])
 
+        self.changeNotif(channelToSet_index, reset=True)
+
 
     def getCurrrentIndex(self, listWidget):
-        #return 0; # COSISUS !!! ICII !!! HÉHOOOOO !!!
+        """on récupère l'index du channel actuellement sélectionné"""
         return int(listWidget.currentItem().text())
 
 
-    def addMessageToAChannel(self, msg, channel):
+    def addMessageToAChannel(self, msg, channel, addNotif=False):
+        """dit au channel de s'ajouter son message ;-)"""
         self.channels[channel].addMessageToTheChannel(msg)
 
+
+
+        # NOTIFICATION              pour l'instant on n'affiche pas le nombre de messages (trop compliqué -> faut reset etc...)         JUSTE PASTILLE ROUGE
+
+        # self.channelsList.selectChannelsWidgetList[channel].channelsListOBJ_layout.addWidget(label)
+        if self.channelsList.selectChannelsWidgetList[channel].newMsg == 0:
+            print("ONE")
+
+        if addNotif != False:
+            self.changeNotif(channel)
+
+    def changeNotif(self, channel, reset=False):
+        """change le nombre de notifications
+        reset : True: on remet le compteur à 0; False : on ajoute 1
+        """
+        if reset :
+            self.channelsList.selectChannelsWidgetList[channel].newMsg = 0
+            self.channelsList.selectChannelsWidgetList[channel].notif.setText(str(0))
+        else:
+            self.channelsList.selectChannelsWidgetList[channel].newMsg += 1
+            self.channelsList.selectChannelsWidgetList[channel].notif.setText(str(self.channelsList.selectChannelsWidgetList[channel].newMsg))
 
     def openSettings(self):
         """open the settings window creating an object defined in the class settingsOBJ"""
@@ -184,66 +210,8 @@ class mainWidgetOBJ(QWidget):
 
 
 
-class serverUI_OBJ(QGroupBox):
-    """docstring for serverUI_OBJ."""
-
-    def __init__(self, parent):                     #parent : mainWidgetOBJ (d'ou cette classe est appelée)
-        super(serverUI_OBJ, self).__init__()
-        self.parent = parent
-        self.serverWidget()
-
-    def serverWidget(self):
-        """
-        this is the widget located on the top left and corner displaying the server's informations
-        """
-        #objects
-        self.serverName_lb = QLabel(str(self.parent.serverName))
-        #layout
-        self.serverInf_lyt = QGridLayout()
-        self.serverInf_lyt.addWidget(self.serverName_lb)
-        #widget
-
-        self.setLayout(self.serverInf_lyt)
-        self.setFixedWidth(self.parent.leftColumnWidth)
-        self.setFixedHeight(self.parent.serverHeight)
-
-        #add widget to main layout
-        self.parent.main_grid_lyt.addWidget(self, 0, 0)
-
-
-
-
-class userUI_OBJ(QWidget):
-    """docstring for userUI_OBJ."""
-
-    def __init__(self, parent):
-        super(userUI_OBJ, self).__init__()
-        self.parent = parent
-        self.buildUserUI()
-
-    def buildUserUI(self):
-        #objects
-        self.settings_btn = QPushButton(QtGui.QIcon(MAINDIR+"/assets/img/settings_icon.png"), '')
-        self.settings_btn.clicked.connect(self.parent.openSettings)
-        lb = QLabel(self.parent.username)
-
-        #layout
-        self.hud_lyt = QHBoxLayout()
-        self.hud_lyt.addWidget(self.settings_btn)
-        self.hud_lyt.addWidget(lb)
-
-        #widget
-        self.setLayout(self.hud_lyt)
-        self.setFixedWidth(self.parent.leftColumnWidth)
-        self.setFixedHeight(self.parent.hudHeight)
-
-        #add widget to main layout
-        self.parent.main_grid_lyt.addWidget(self, 2, 0, 1, 1)
-
-
-
 class channelsListOBJ(QListWidget):
-    """docstring for channelsListOBJ."""
+    """La liste des boutons sur lesquels on clique pour sélectionner un channel"""
 
     def __init__(self, parent, channels = []):
         super(channelsListOBJ, self).__init__()
@@ -259,12 +227,14 @@ class channelsListOBJ(QListWidget):
             # print(self.channelsSENT[i])
             #item
             item = QListWidgetItem(str(i))  #le i est pour avoir un index pour sélectionner plus tard le bon channel quand on cliquera dessus
+            item.setFont(QtGui.QFont('SansSerif', 1))       #loul le 1 c'est pour cacherr cet index dégueulace
+            # item.setPalette()
             #widget
-            widget = QWidget()
-            lyt = QHBoxLayout()
-            widget.setLayout(lyt)
-            lb = QLabel(self.channelsSENT[i])
-            lyt.addWidget(lb)
+
+
+
+            widget = channelItemOBJ(channelName = self.channelsSENT[i])
+            print(self.channelsSENT[i])
 
             item.setSizeHint(widget.sizeHint())
 
@@ -277,14 +247,31 @@ class channelsListOBJ(QListWidget):
 
         self.parent.main_grid_lyt.addWidget(self, 1, 0)
 
+class channelItemOBJ(QWidget):
+    """Le bouton sur lequel on clique quand on sélectionne un channel."""
+
+    def __init__(self, channelName):
+        super(channelItemOBJ, self).__init__()
+        self.newMsg = 0
+
+        self.channelsListOBJ_layout = QHBoxLayout()
+        self.setLayout(self.channelsListOBJ_layout)
+
+        print(channelName)
+        lb = QLabel(channelName)
+        self.channelsListOBJ_layout.addWidget(lb)
+
+
+        self.notif = QLabel(str(self.newMsg))
+        self.channelsListOBJ_layout.addWidget(self.notif)
 
 
 class channelOBJ(QScrollArea):
-    """docstring for channelOBJ."""
+    """Le channel lui même contenant les messages"""
 
     def __init__(self, text, *args, **kwargs):
         super(channelOBJ, self).__init__(*args, **kwargs)
-        self.messagesList = []
+        # self.messagesList = []
         #layout
         main_lyt = QVBoxLayout()                                                #layout contenant les deux autres layouts
         #messages layout
@@ -309,7 +296,7 @@ class channelOBJ(QScrollArea):
         self.channel_lyt.addWidget(message)
         #scroll focus toujours le bas de la liste des messages
 
-        self.messagesList.append(message)
+        # self.messagesList.append(message)
         # print(self.messagesList)
 
         self.scrollDown()
@@ -323,12 +310,12 @@ class channelOBJ(QScrollArea):
         # print("scroll")
 
 
-    def scrollDownFar(self):
-        self.ensureWidgetVisible(self.messagesList[-1].message_lb)
+    # def scrollDownFar(self):
+        # self.ensureWidgetVisible(self.messagesList[-1].message_lb)
         # print(self.messagesList[-1].index())
 
 class messagesOBJ(QGroupBox):
-    """docstring for messagesOBJ."""
+    """Le message qu'on va ajouter au channel"""
 
     def __init__(self, message, *args, **kwargs):
         super(messagesOBJ, self).__init__(*args, **kwargs)
@@ -386,7 +373,7 @@ class messagesOBJ(QGroupBox):
 
 
 class inputOBJ(QWidget):
-    """docstring for inputOBJ."""
+    """Là où on entre le message à tapper"""
 
     def __init__(self, parent):
         super(inputOBJ, self).__init__()
@@ -414,7 +401,7 @@ class inputOBJ(QWidget):
 
 
 class settingsOBJ(QDialog):
-    """docstring for settingsOBJ."""
+    """Ben les settings quoi..."""
 
     def __init__(self, scale, location=[100, 100], *args, **kwargs):
         super(settingsOBJ, self).__init__(*args, **kwargs)
@@ -426,4 +413,60 @@ class settingsOBJ(QDialog):
         with open(MAINDIR + '/assets/css/style.css') as style:
             self.setStyleSheet(style.read())
 
-#
+
+
+class serverUI_OBJ(QGroupBox):
+    """Le carré en haut à gauche ou ya des infos sur le serveur"""
+
+    def __init__(self, parent):                     #parent : mainWidgetOBJ (d'ou cette classe est appelée)
+        super(serverUI_OBJ, self).__init__()
+        self.parent = parent
+        self.serverWidget()
+
+    def serverWidget(self):
+        """
+        this is the widget located on the top left and corner displaying the server's informations
+        """
+        #objects
+        self.serverName_lb = QLabel(str(self.parent.serverName))
+        #layout
+        self.serverInf_lyt = QGridLayout()
+        self.serverInf_lyt.addWidget(self.serverName_lb)
+        #widget
+
+        self.setLayout(self.serverInf_lyt)
+        self.setFixedWidth(self.parent.leftColumnWidth)
+        self.setFixedHeight(self.parent.serverHeight)
+
+        #add widget to main layout
+        self.parent.main_grid_lyt.addWidget(self, 0, 0)
+
+
+
+
+class userUI_OBJ(QWidget):
+    """Le carré en bas à gauche ou ya des infos sur le user et ou on peut ouvrir les settings"""
+
+    def __init__(self, parent):
+        super(userUI_OBJ, self).__init__()
+        self.parent = parent
+        self.buildUserUI()
+
+    def buildUserUI(self):
+        #objects
+        self.settings_btn = QPushButton(QtGui.QIcon(MAINDIR+"/assets/img/settings_icon.png"), '')
+        self.settings_btn.clicked.connect(self.parent.openSettings)
+        lb = QLabel(self.parent.username)
+
+        #layout
+        self.hud_lyt = QHBoxLayout()
+        self.hud_lyt.addWidget(self.settings_btn)
+        self.hud_lyt.addWidget(lb)
+
+        #widget
+        self.setLayout(self.hud_lyt)
+        self.setFixedWidth(self.parent.leftColumnWidth)
+        self.setFixedHeight(self.parent.hudHeight)
+
+        #add widget to main layout
+        self.parent.main_grid_lyt.addWidget(self, 2, 0, 1, 1)

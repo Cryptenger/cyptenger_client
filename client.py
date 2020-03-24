@@ -13,11 +13,12 @@ historyAdded = False
 MAINDIR = os.path.dirname(os.path.realpath(__file__))
 
 class WorkerSignals(QtCore.QObject):
+    """ben je crois que je suis pas sur que je sais pas"""
     result = QtCore.pyqtSignal(object)
 
 class Worker(QtCore.QObject):#QRunnable):
     '''
-    Worker thread
+    Worker thread    ben le truc qui recoit le message
     '''
     received_message = QtCore.pyqtSignal(str)
 
@@ -74,6 +75,7 @@ class Worker(QtCore.QObject):#QRunnable):
 
 
 class MainWindow(QMainWindow):
+    """Ben, tout Cryptenger"""
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.initWindow()
@@ -105,9 +107,9 @@ class MainWindow(QMainWindow):
         self.main_V_lyt.addWidget(self.connection_widget)
 
         """TEMP PARCE QUE RELOU"""
-        self.connection_widget.firstName_lne.setText('Alfiory')
+        self.connection_widget.firstName_lne.setText('Cosius')
         self.connection_widget.secondName_lne.setText('Samper')
-        self.connection_widget.thirdName_lne.setText('Cosius')
+        self.connection_widget.thirdName_lne.setText('Alfiory')
         self.connection_widget.port_lne.setText('25565')
         self.connection_widget.adresse_lne.setText('localhost')
 
@@ -195,18 +197,25 @@ class MainWindow(QMainWindow):
             #reset input line
             self.cryptenger_win.inputUI.input_lne.setText('')   #c'est peut etre de la que vient le bug d'atom des multiples messages
 
+            # #met notif a 0
+            # self.cryptenger_win.changeNotif(channel, reset=True)
+
             """ADD THE TEXT TO THE UI"""
             #self.cryptenger_win.addMessageToAChannel(msg = message, channel = channel)
+
+
 
 
     def msgRecv(self, msg):
         message_in_python = json.loads(msg)       #conversion JSON to PYTHON
 
         try:                                                                        #récupère le channel actuel depuis le current item sélectionné de la QListWidget des channels
-            channel = self.cryptenger_win.channelsList.currentItem().text()
-            channel = int(channel)
+            current_channel = self.cryptenger_win.channelsList.currentItem().text()
+            current_channel = int(current_channel)
         except:                                                                     #si on a pas encore sélectionné de channel (qu'on utilise le channel par défaut, après le lancement) on utilise le channel 0 lancé par défaut. Car la ligne du dessus a besoin qu'un item de la liste ait été sélectionné au moins une fois.
-            channel = 0
+            current_channel = 0
+
+        print(message_in_python)
 
         if "channelList" in message_in_python:      #NE SE LIRA QU 1 SEULE FOIS       LA PREMIERE FOIS
             print("on a ici la liste des channels !")
@@ -224,6 +233,9 @@ class MainWindow(QMainWindow):
             self.main_V_lyt.addWidget(self.cryptenger_win)
             self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
 
+            """PEUT ETRE A ENLEVER : a été rajouté pr pb d'historique (avec si historique trop court  ca passe pas -> attend d'etre assez long puis passe)"""
+            message_in_python = history     #pour afficher l'historique
+
         elif "history" in message_in_python:
             print("on a ici l'historique")
 
@@ -232,20 +244,30 @@ class MainWindow(QMainWindow):
                 channel = message_in_python["history"][i]
                 channel = json.loads(channel)           #json to python
                 channel = channel["messageType"]['channel']     #récupèr le channel
-                self.cryptenger_win.addMessageToAChannel(message, int(channel))
+                print('HELLO')
+                self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel))
 
         elif "messageType" in message_in_python:
             print("on a ici un message !")
 
             channel = message_in_python["messageType"]["channel"]   #pour envoyer dans le bon channel
 
-            self.cryptenger_win.addMessageToAChannel(msg, channel)                  #ajoute le message à l'UI
+            username = message_in_python["messageType"]["username"]
+            addNotif = False
+            if username != self.settings["firstName"] and not channel == current_channel :          #ET SI CURRENT CHANNEL DIFFERENT DE CHANNEL DU MESSAGE ENVOYE
+                addNotif=True
+
+            # print(channel)
+            # print(current_channel)
+            # print(message_in_python["channel"])
+
+            self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)                  #ajoute le message à l'UI
 
 
 
 
 
-
+"""Lancement de L'application Cryptenger"""
 if __name__ == "__main__":
 
     app = QApplication([])
