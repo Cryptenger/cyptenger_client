@@ -79,6 +79,14 @@ class MainWindow(QMainWindow):
         self.initWindow()
         self.buildWindow()
 
+    def closeEvent(self, event):
+        """fonction appelée (toute seule) quand l'utilisateur ferme cryptenger"""
+        print("Cryptenger closed")
+        try:    #on mettra ici toutes les fenêtres à fermer
+            self.cryptenger_win.settings.close()
+        except:
+            pass
+
     def initWindow(self):                                                       #les self.settings de la fenêtre principale
         self.setGeometry(0, 0, 1280, 720)
         self.setWindowTitle('Cryptenger')
@@ -221,9 +229,9 @@ class MainWindow(QMainWindow):
                 channel = json.loads(channel)           #json to python
                 channel = channel["messageType"]['channel']     #récupèr le channel
                 self.cryptenger_win.addMessageToAChannel(message, int(channel))
-            print("scroll down")
+            # print("scroll down")
             # self.cryptenger_win.channels[channel].scrollDownFar()
-            print("scroll down")
+            # print("scroll down")
         elif "messageType" in message_in_python:
             print("on a ici un message !")
 
@@ -241,3 +249,5 @@ if __name__ == "__main__":
     app = QApplication([])
     window = MainWindow()
     app.exec_()
+
+# del window

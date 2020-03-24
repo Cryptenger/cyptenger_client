@@ -142,16 +142,19 @@ class mainWidgetOBJ(QWidget):
             self.channels.append(channel)
 
 
+
     def setChannels(self,  listWidget=None, channelClicked=''):          #on switch de channel des qu'on clique sur un item de la liste des channels
         if channelClicked == '':        #pour mettre le channel 0 par defaut
             channelToSet_index = self.getCurrrentIndex(listWidget)
             self.channels[channelToSet_index].scrollDown()
         else:               #toutes les autres fois (a partir du moment ou on a changé de channel au moins une fois)
             channelToSet_index = int(channelClicked)
+
+        self.channels[channelToSet_index].scrollDown()
+
         for i in reversed(range(self.CHANNEL_lyt.count())):
             self.CHANNEL_lyt.itemAt(i).widget().setParent(None)
 
-        self.channels[channelToSet_index].scrollDown()
         index = self.main_grid_lyt.indexOf(self.channels[channelToSet_index])
         # print('INDEX ' + str(index))
         self.CHANNEL_lyt.addWidget(self.channels[channelToSet_index])
@@ -307,7 +310,7 @@ class channelOBJ(QScrollArea):
         #scroll focus toujours le bas de la liste des messages
 
         self.messagesList.append(message)
-        print(self.messagesList)
+        # print(self.messagesList)
 
         self.scrollDown()
 
@@ -317,12 +320,12 @@ class channelOBJ(QScrollArea):
         self.ensureWidgetVisible(self.space_lb)     #, 500, 200
         # self.ensureWidgetVisible(self.messagesList[-1])
         # self.ensureVisible(0, 50, 0, 0)
-        print("scroll")
+        # print("scroll")
 
 
     def scrollDownFar(self):
         self.ensureWidgetVisible(self.messagesList[-1].message_lb)
-        print(self.messagesList[-1].index())
+        # print(self.messagesList[-1].index())
 
 class messagesOBJ(QGroupBox):
     """docstring for messagesOBJ."""
@@ -364,8 +367,8 @@ class messagesOBJ(QGroupBox):
 
         circle.setFixedWidth(30)
         circle.setFixedHeight(30)
-        self.lyt.addWidget(circle)
         circle.setStyleSheet("QLabel{border: 2px solid transparent;border-radius: 25px;min-height: 20px;min-width: 20px;background-color: hsv("+values+");}")
+        self.lyt.addWidget(circle)
 
         #pseudo
         pseudo_lb = QLabel(messageJSON["username"])
@@ -378,6 +381,8 @@ class messagesOBJ(QGroupBox):
         #message
         self.message_lb = QLabel(messageJSON["message"])
         self.lyt.addWidget(self.message_lb)
+
+    
 
 
 class inputOBJ(QWidget):
@@ -417,5 +422,8 @@ class settingsOBJ(QDialog):
         self.setGeometry(location[0]+100, location[1]+100, scale[0]/2, scale[1]/2)
         self.setWindowTitle('Settings')
         self.show()
+
+        with open(MAINDIR + '/assets/css/style.css') as style:
+            self.setStyleSheet(style.read())
 
 #
