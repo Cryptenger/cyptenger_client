@@ -47,11 +47,11 @@ class Worker(QtCore.QObject):#QRunnable):
                 if historyAdded == False:
                     try:    #si le message n'est pas en entie ca crash (= si on peut pas le convertir en json)
                         json.loads(msg_received)       #conversion JSON to PYTHON
-                        print('lolilol')
+                        # print('lolilol')
                         self.received_message.emit(msg_received)       #ON NE PEUT PAS ENVOYER  UN DICTIONNAIRE DONC ON VA TRICHER MAIS CE SERA PLUS LOURD
                     except:     #PREMIERE FOIS SI CA MARCHE PAS : A CAUSE DE LA LISTE DES CHANNELS
                         if "channelList" in msg_received:
-                            print("H1")
+                            # print("H1")
                             part1 = msg_received.split("<KTN>")[0]          #on fait passer d'abord la liste des channels
                             self.received_message.emit(part1)
 
@@ -60,14 +60,14 @@ class Worker(QtCore.QObject):#QRunnable):
                             history = history + part2
 
                         else:                   #maintenant si ca marche pas c'est que le message n'est pas entier : on le stique dans var global history
-                            print('H2')
+                            # print('H2')
                             history = history + msg_received
                             try:
-                                print('H4')
+                                # print('H4')
                                 json.loads(history)             #teste si l'historique est complet = si le json n'a pas d'errreur
                                 self.received_message.emit(history)
                             except:
-                                print('H3')
+                                # print('H3')
                                 pass
 
 
@@ -157,14 +157,7 @@ class MainWindow(QMainWindow):
             self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
             self.workerThread.start()
 
-            #BUILD MAIN WIDGET
-            self.cryptenger_win = mainWidgetOBJ(
-            parentObject=self,                                              #pour fermer toute la mainWindow
-            serverName=self.settings['adress'],
-            Username=self.settings['firstName'],
-            )
-            self.main_V_lyt.addWidget(self.cryptenger_win)
-            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
+
 
     def msgSend(self):
         #message
@@ -215,10 +208,21 @@ class MainWindow(QMainWindow):
         except:                                                                     #si on a pas encore sélectionné de channel (qu'on utilise le channel par défaut, après le lancement) on utilise le channel 0 lancé par défaut. Car la ligne du dessus a besoin qu'un item de la liste ait été sélectionné au moins une fois.
             channel = 0
 
-        if "channelList" in message_in_python:
+        if "channelList" in message_in_python:      #NE SE LIRA QU 1 SEULE FOIS       LA PREMIERE FOIS
             print("on a ici la liste des channels !")
-            print(message_in_python["channelList"][0])
+            # print(message_in_python["channelList"][0])
             self.channelList = message_in_python["channelList"]
+            print(self.channelList)
+
+            #BUILD MAIN WIDGET
+            self.cryptenger_win = mainWidgetOBJ(
+            parentObject=self,                                              #pour fermer toute la mainWindow
+            serverName=self.settings['adress'],
+            Username=self.settings['firstName'],
+            channelsNames = self.channelList,
+            )
+            self.main_V_lyt.addWidget(self.cryptenger_win)
+            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
 
         elif "history" in message_in_python:
             print("on a ici l'historique")
@@ -229,9 +233,7 @@ class MainWindow(QMainWindow):
                 channel = json.loads(channel)           #json to python
                 channel = channel["messageType"]['channel']     #récupèr le channel
                 self.cryptenger_win.addMessageToAChannel(message, int(channel))
-            # print("scroll down")
-            # self.cryptenger_win.channels[channel].scrollDownFar()
-            # print("scroll down")
+
         elif "messageType" in message_in_python:
             print("on a ici un message !")
 
@@ -249,5 +251,3 @@ if __name__ == "__main__":
     app = QApplication([])
     window = MainWindow()
     app.exec_()
-
-# del window

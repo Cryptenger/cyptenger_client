@@ -89,7 +89,7 @@ class connectionWidgetOBJ(QWidget):
 class mainWidgetOBJ(QWidget):
     """docstring for mainWidgetOBJ."""
 
-    def __init__(self, parentObject, Username, serverName, *args, **kwargs):
+    def __init__(self, parentObject, Username, serverName, channelsNames, *args, **kwargs):
         super(mainWidgetOBJ, self).__init__(*args, **kwargs)
         #variables
         self.leftColumnWidth = 300
@@ -99,7 +99,7 @@ class mainWidgetOBJ(QWidget):
         self.username = Username
         self.channels = []  #objects
         self.historics = ['msg1', 'msg2', 'msg3'] #text
-        self.channelsNames=['salon 1', 'salon 2', 'salon 3']
+        self.channelsNames= channelsNames #['salon 1', 'salon 2', 'salon 3']
         #
         self.buildWidget()
 
@@ -382,7 +382,7 @@ class messagesOBJ(QGroupBox):
         self.message_lb = QLabel(messageJSON["message"])
         self.lyt.addWidget(self.message_lb)
 
-    
+
 
 
 class inputOBJ(QWidget):
