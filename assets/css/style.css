@@ -7,7 +7,9 @@
     background: #262626;
     color: white;
     border: 1px solid #3b3b3b;
-    border-radius: 4px;
+    /* border-radius: 4px; */
+    margin: 0px;
+    padding: 0px
 
 }
 
@@ -37,8 +39,8 @@ QLabel{
 QLabel:hover{
     border: 2px solid transparent;
 }
-
-QTabBar::tab{       /*tab selector/button*/
+/*
+QTabBar::tab{       tab selector/button
     color: white;
     background: transparent;
     border: 10px solid transparent;
@@ -53,11 +55,10 @@ QTabBar::tab:selected{
 
 QTabWidget::pane{
   background: #262626;
-  /*margin: 5px;*/
-  border: 5px solid #262626;  /*truc relou*/
+  border: 5px solid #262626;  truc relou
   border-radius: 3px;
   padding: 0.5em;
-}
+}*/
 
 QScrollBar{            /* le fond*/
   border: 0px;  /* border autour du truc qu'on tire*/
@@ -71,6 +72,10 @@ QScrollBar::handle{    /*le truc qu'on tire*/
 
 QScrollBar::add-page, QScrollBar::sub-page{   /*le reste des petits points sur le fond*/
   background: #262626;
+}
+
+QScrollArea{
+  border: 0px;
 }
 
 QLabel#Pixmap{
@@ -89,8 +94,13 @@ QLabel#Pixmap{
 }
 
 
-/*
+
 QGroupBox{
-    padding: 5px;
-    max-height: 3em;
-}*/
+    /* padding: 5px; */
+    /* max-height: 3em; */
+    /* background: #323232;; */
+}
+
+#box{
+  /* background: red; */
+}

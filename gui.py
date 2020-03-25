@@ -100,6 +100,8 @@ class mainWidgetOBJ(QWidget):
 
         #layout
         self.main_grid_lyt = QGridLayout()
+        self.main_grid_lyt.setHorizontalSpacing(2)      #STYLE
+        self.main_grid_lyt.setVerticalSpacing(2)
         self.setLayout(self.main_grid_lyt)
 
 
@@ -203,6 +205,7 @@ class channelsListOBJ(QListWidget):
         self.parent = parent
         self.channelsSENT = channels    #liste contenant toutes les infos à entrer dans les channels
         self.selectChannelsWidgetList = []       #liste contenant tous les item pour sélectionner les channels
+        self.setObjectName('box')
         self.buildChannelsList()
 
     def buildChannelsList(self):
@@ -231,7 +234,7 @@ class channelsListOBJ(QListWidget):
 
         self.parent.main_grid_lyt.addWidget(self, 1, 0)
 
-class channelItemOBJ(QWidget):
+class channelItemOBJ(QGroupBox):
     """Le bouton sur lequel on clique quand on sélectionne un channel."""
 
     def __init__(self, channelName):
@@ -273,6 +276,9 @@ class channelOBJ(QScrollArea):
         widget.setLayout(main_lyt)
         self.setWidget(widget)
         self.setWidgetResizable(True)
+
+        widget.setObjectName('box')
+        # self.setObjectName('box')
 
     #add message to the channel
     def addMessageToTheChannel(self, message):
@@ -353,10 +359,12 @@ class messagesOBJ(QGroupBox):
         self.message_lb = QLabel(messageJSON["message"])
         self.lyt.addWidget(self.message_lb)
 
+        self.setStyleSheet('box')
 
 
 
-class inputOBJ(QWidget):
+
+class inputOBJ(QGroupBox):
     """Là où on entre le message à tapper"""
 
     def __init__(self, parent):
@@ -428,7 +436,7 @@ class serverUI_OBJ(QGroupBox):
 
 
 
-class userUI_OBJ(QWidget):
+class userUI_OBJ(QGroupBox):
     """Le carré en bas à gauche ou ya des infos sur le user et ou on peut ouvrir les settings"""
 
     def __init__(self, parent):

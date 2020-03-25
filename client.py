@@ -65,7 +65,6 @@ class Worker(QtCore.QObject):#QRunnable):
 
                         rest_of_the_message = msg_received.split("<KTN>")[1]      #puis l'historique
 
-                        print(type(self.history))
                         self.history = self.checkIfMsgIsInCorrectFormat(checked_msg=rest_of_the_message, store_in_var=str(self.history))
 
                     else:                   #maintenant si ca marche pas c'est que le message n'est pas entier : on le stique dans var global history
