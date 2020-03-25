@@ -1,19 +1,30 @@
-import sys, random, os, functools, datetime, json
-import time
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtWidgets import *
+#les modules faisant parti de la librairie standard de python :
+import sys, random, os, functools, datetime, json, time, socket, select
+#nous utilison la librairie graphiqye PyQt5
+try:
+    from PyQt5 import QtGui, QtCore
+    from PyQt5.QtWidgets import *
+except:
+    print('You must install the PyQt5 library')
+    print('You can do it with the following command on your Commands Prompt')
+    print('pip install PyQt5')
+    quit = input('press a key to quit')
+    exit()
+#nos propres modules
 from gui import mainWidgetOBJ, connectionWidgetOBJ
 
-#Connexion au serveur
-import socket, select
+#les commentaires d'explications sont disposés dans les déclarations de fonctions principalement. Les pararmètres ne sont pas forcément expliqués lors des appels de fonctions.
 
+#le serveur n'envoieque des strings pures et par paquets de 1 Ko
+#nous utilisons le json pour dialoguer avec le serveur
+#Donc si l'historique est trop long il n'est pas envoyé d'un seul coup.
+#Tant qu'il n'est pas entier on stoque l'historique dans la variable history
 history = ''
-historyAdded = False
-#root directory
-MAINDIR = os.path.dirname(os.path.realpath(__file__))
 
 class WorkerSignals(QtCore.QObject):
-    """ben je crois que je suis pas sur que je sais pas"""
+    """
+    Worker signal
+    """
     result = QtCore.pyqtSignal(object)
 
 class Worker(QtCore.QObject):#QRunnable):
@@ -21,7 +32,6 @@ class Worker(QtCore.QObject):#QRunnable):
     Worker thread    ben le truc qui recoit le message
     '''
     received_message = QtCore.pyqtSignal(str)
-
 
     def __init__(self, parent):
         super(Worker, self).__init__()
@@ -31,10 +41,10 @@ class Worker(QtCore.QObject):#QRunnable):
 
     @QtCore.pyqtSlot()
     def run(self):
-        global history, historyAdded
+        global history
         while True:
             server_message, wlist, xlist = select.select([self.parent.server_connection], [], [], 0.05)
-            #print(MainWindow().history)
+
             if len(server_message) != 0:
                 # Client est de type socket
                 msg_received = server_message[0].recv(1024)
@@ -42,34 +52,37 @@ class Worker(QtCore.QObject):#QRunnable):
                 msg_received = msg_received.decode()
 
 
-                if msg_received.startswith('<history') and msg_received.endswith('</history>'):
-                    print('HOURRAAAAAA')
+                try:    #si le message n'est pas en entie ca crash (= si on peut pas le convertir en json)
+                    json.loads(msg_received)       #conversion JSON to PYTHON
+                    # print('lolilol')
+                    self.received_message.emit(msg_received)       #ON NE PEUT PAS ENVOYER  UN DICTIONNAIRE DONC ON VA TRICHER MAIS CE SERA PLUS LOURD
+                except:     #PREMIERE FOIS SI CA MARCHE PAS : A CAUSE DE LA LISTE DES CHANNELS
+                    if "channelList" in msg_received:
+                        print("H1")
+                        part1 = msg_received.split("<KTN>")[0]          #on fait passer d'abord la liste des channels
+                        self.received_message.emit(part1)
 
-                if historyAdded == False:
-                    try:    #si le message n'est pas en entie ca crash (= si on peut pas le convertir en json)
-                        json.loads(msg_received)       #conversion JSON to PYTHON
-                        # print('lolilol')
-                        self.received_message.emit(msg_received)       #ON NE PEUT PAS ENVOYER  UN DICTIONNAIRE DONC ON VA TRICHER MAIS CE SERA PLUS LOURD
-                    except:     #PREMIERE FOIS SI CA MARCHE PAS : A CAUSE DE LA LISTE DES CHANNELS
-                        if "channelList" in msg_received:
-                            # print("H1")
-                            part1 = msg_received.split("<KTN>")[0]          #on fait passer d'abord la liste des channels
-                            self.received_message.emit(part1)
+                        part2 = msg_received.split("<KTN>")[1]      #puis l'historique
 
-                            part2 = msg_received.split("<KTN>")[1]      #puis l'historique
+                        history = history + part2
+                        try:
+                            json.loads(history)
+                            self.received_message.emit(history)
+                        except:
+                            print('H5')
+                            pass
 
-                            history = history + part2
-
-                        else:                   #maintenant si ca marche pas c'est que le message n'est pas entier : on le stique dans var global history
-                            # print('H2')
-                            history = history + msg_received
-                            try:
-                                # print('H4')
-                                json.loads(history)             #teste si l'historique est complet = si le json n'a pas d'errreur
-                                self.received_message.emit(history)
-                            except:
-                                # print('H3')
-                                pass
+                    else:                   #maintenant si ca marche pas c'est que le message n'est pas entier : on le stique dans var global history
+                        print('H2')
+                        history = history + msg_received
+                        try:
+                            print('H4')
+                            json.loads(history)             #teste si l'historique est complet = si le json n'a pas d'errreur
+                            self.received_message.emit(history)
+                            print('H6')
+                        except:
+                            print('H3')
+                            pass
 
 
 
@@ -92,30 +105,30 @@ class MainWindow(QMainWindow):
     def initWindow(self):                                                       #les self.settings de la fenêtre principale
         self.setGeometry(0, 0, 1280, 720)
         self.setWindowTitle('Cryptenger')
-        self.setWindowIcon(QtGui.QIcon(MAINDIR + '/assets/ico/cryptenger_icon.ico'))
+        self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
 
-        with open(MAINDIR + '/assets/css/style.css') as style:
+        with open('./assets/css/style.css') as style:
             self.setStyleSheet(style.read())
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
+        #fenêtre de connection
+        self.connection_widget = connectionWidgetOBJ()      #on appelle la fenêtre de connection
+        self.connection_widget.start_btn.clicked.connect(self.connectAndRunSever)
+
         #layout de la fenêtre principale
         self.main_V_lyt = QVBoxLayout()
-
-        #fenêtre de connection
-        self.connection_widget = connectionWidgetOBJ()
-        self.connection_widget.start_btn.clicked.connect(self.connectAndRunSever)
         self.main_V_lyt.addWidget(self.connection_widget)
 
         """TEMP PARCE QUE RELOU"""
         self.connection_widget.firstName_lne.setText('Cosius')
-        self.connection_widget.secondName_lne.setText('Samper')
-        self.connection_widget.thirdName_lne.setText('Alfiory')
-        self.connection_widget.port_lne.setText('25565')
         self.connection_widget.adresse_lne.setText('localhost')
+        self.connection_widget.port_lne.setText('25565')
 
-
+        #widget
         widget = QWidget()
         widget.setLayout(self.main_V_lyt)
+
+        #QMainWindow
         self.setCentralWidget(widget)
         self.show()
 
@@ -123,8 +136,6 @@ class MainWindow(QMainWindow):
     def connectAndRunSever(self):
         self.settings = {
             "firstName" : self.connection_widget.firstName_lne.text(),
-            "secondName" : self.connection_widget.secondName_lne.text(),
-            "thirdName" : self.connection_widget.thirdName_lne.text(),
             "port" : self.connection_widget.port_lne.text(),
             "adress" : self.connection_widget.adresse_lne.text(),
             }
@@ -223,51 +234,57 @@ class MainWindow(QMainWindow):
 
         print(message_in_python)
 
+        #si la string envoyée par le serveur est la liste des channels
+        #fait parti des informations que le client doit recevoi AVANT de lancer la connection ET l'interface utilisateur principale
         if "channelList" in message_in_python:      #NE SE LIRA QU 1 SEULE FOIS       LA PREMIERE FOIS
-            print("on a ici la liste des channels !")
-            # print(message_in_python["channelList"][0])
+            print("server : Channel list recieved")
+
             self.channelList = message_in_python["channelList"]
-            print(self.channelList)
 
-            #BUILD MAIN WIDGET
+            #maintenant qu'on a TOUTES les informations nécessaires à la création de l'interface utilisateur finale on la crée
             self.cryptenger_win = mainWidgetOBJ(
-            parentObject=self,                                              #pour fermer toute la mainWindow
-            serverName=self.settings['adress'],
-            Username=self.settings['firstName'],
-            channelsNames = self.channelList,
+                parentObject=self,
+                serverName=self.settings['adress'],
+                Username=self.settings['firstName'],
+                channelsNames = self.channelList,
             )
+
             self.main_V_lyt.addWidget(self.cryptenger_win)
-            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)   #send message signal
+            self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)
 
-            """PEUT ETRE A ENLEVER : a été rajouté pr pb d'historique (avec si historique trop court  ca passe pas -> attend d'etre assez long puis passe)"""
-            message_in_python = history     #pour afficher l'historique
+            #initialisation des notifications (on cache le label et remet le compteur à 0)
+            for j in range(len(self.channelList)):
+                self.cryptenger_win.changeNotif(channel=int(j), reset=True)
 
+
+        #si la string envoyée par le serveur est l'historique
         elif "history" in message_in_python:
-            print("on a ici l'historique")
+            print("server : History recieved")
 
+            #pour chaque message
             for i in range(0, len(message_in_python["history"])):
+
                 message = message_in_python["history"][i]
-                channel = message_in_python["history"][i]
-                channel = json.loads(channel)           #json to python
-                channel = channel["messageType"]['channel']     #récupèr le channel
-                print('HELLO')
+                channel = json.loads(message)           #json to python     JE SAIS PAS POURQUOI JE SUIS OBLIG2 DE LE REFAIRE
+                channel = channel["messageType"]['channel']     #récupère le channel
+
+                #ajout du message
                 self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel))
 
+        #si la string envoyé par le serveur est un message
         elif "messageType" in message_in_python:
-            print("on a ici un message !")
+            print("server : message received")
 
-            channel = message_in_python["messageType"]["channel"]   #pour envoyer dans le bon channel
-
+            channel = message_in_python["messageType"]["channel"]
             username = message_in_python["messageType"]["username"]
+
+            #on ajoute une notification seulement si le message vient d'un autre utilisateur et qu'il est affiché dans un autre channel que celui actuellement sélectionné
             addNotif = False
             if username != self.settings["firstName"] and not channel == current_channel :          #ET SI CURRENT CHANNEL DIFFERENT DE CHANNEL DU MESSAGE ENVOYE
                 addNotif=True
 
-            # print(channel)
-            # print(current_channel)
-            # print(message_in_python["channel"])
-
-            self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)                  #ajoute le message à l'UI
+            #ajout du message
+            self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)
 
 
 

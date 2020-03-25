@@ -1,10 +1,6 @@
 import sys, random, os, functools, datetime, json
-
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
-#from importlib import reload
-#root directory
-MAINDIR = os.path.dirname(os.path.realpath(__file__))
 
 class connectionWidgetOBJ(QWidget):
     """docstring for connectionWidgetOBJ."""
@@ -32,7 +28,7 @@ class connectionWidgetOBJ(QWidget):
         cryptenger_flag_lyt.setAlignment(QtCore.Qt.AlignCenter)
 
         cryptenger_logo = QLabel("Cryptenger")
-        pixmap = QtGui.QPixmap(MAINDIR + "/assets/img/cryptenger_flag.jpg")
+        pixmap = QtGui.QPixmap("./assets/img/cryptenger_flag.jpg")
         pixmap = pixmap.scaled(1000, 200, aspectRatioMode=QtCore.Qt.KeepAspectRatioByExpanding)
         # cryptenger_logo.setObjectName('Pixmap')
         cryptenger_logo.setPixmap(pixmap)
@@ -52,18 +48,6 @@ class connectionWidgetOBJ(QWidget):
         self.firstName_lne.setPlaceholderText('Boby')
         self.main_V_lyt.addWidget(name1_lb)
         self.main_V_lyt.addWidget(self.firstName_lne)
-
-        name2_lb = QLabel('\nSecond name : ')
-        self.secondName_lne = QLineEdit()
-        self.secondName_lne.setPlaceholderText('Bob')
-        self.main_V_lyt.addWidget(name2_lb)
-        self.main_V_lyt.addWidget(self.secondName_lne)
-
-        name3_lb = QLabel('\nThird name : ')
-        self.thirdName_lne = QLineEdit()
-        self.thirdName_lne.setPlaceholderText('Bobu')
-        self.main_V_lyt.addWidget(name3_lb)
-        self.main_V_lyt.addWidget(self.thirdName_lne)
 
         adresse_lb = QLabel('\nAdress : ')
         self.adresse_lne = QLineEdit()
@@ -190,7 +174,7 @@ class mainWidgetOBJ(QWidget):
         """
         if reset :
             self.channelsList.selectChannelsWidgetList[channel].newMsg = 0
-            self.channelsList.selectChannelsWidgetList[channel].notif.setText(str(0))
+            self.channelsList.selectChannelsWidgetList[channel].notif.setText("")
         else:
             self.channelsList.selectChannelsWidgetList[channel].newMsg += 1
             self.channelsList.selectChannelsWidgetList[channel].notif.setText(str(self.channelsList.selectChannelsWidgetList[channel].newMsg))
@@ -410,7 +394,7 @@ class settingsOBJ(QDialog):
         self.setWindowTitle('Settings')
         self.show()
 
-        with open(MAINDIR + '/assets/css/style.css') as style:
+        with open('./assets/css/style.css') as style:
             self.setStyleSheet(style.read())
 
 
@@ -454,7 +438,7 @@ class userUI_OBJ(QWidget):
 
     def buildUserUI(self):
         #objects
-        self.settings_btn = QPushButton(QtGui.QIcon(MAINDIR+"/assets/img/settings_icon.png"), '')
+        self.settings_btn = QPushButton(QtGui.QIcon("./assets/img/settings_icon.png"), '')
         self.settings_btn.clicked.connect(self.parent.openSettings)
         lb = QLabel(self.parent.username)
 
