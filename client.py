@@ -19,7 +19,7 @@ from gui import mainWidgetOBJ, connectionWidgetOBJ
 #nous utilisons le json pour dialoguer avec le serveur
 #Donc si l'historique est trop long il n'est pas envoyé d'un seul coup.
 #Tant qu'il n'est pas entier on stoque l'historique dans la variable history
-history = ''
+
 
 class WorkerSignals(QtCore.QObject):
     """
@@ -33,15 +33,18 @@ class Worker(QtCore.QObject):#QRunnable):
     '''
     received_message = QtCore.pyqtSignal(str)
 
+
     def __init__(self, parent):
         super(Worker, self).__init__()
         self.parent = parent
 
         self.signals = WorkerSignals()
 
+        self.history = ''
+
     @QtCore.pyqtSlot()
     def run(self):
-        global history
+        # global history
         while True:
             server_message, wlist, xlist = select.select([self.parent.server_connection], [], [], 0.05)
 
@@ -52,39 +55,35 @@ class Worker(QtCore.QObject):#QRunnable):
                 msg_received = msg_received.decode()
 
 
-                try:    #si le message n'est pas en entie ca crash (= si on peut pas le convertir en json)
+                try:    #si le message n'est pas en entier ca fail (= si on peut pas le convertir en json)
                     json.loads(msg_received)       #conversion JSON to PYTHON
-                    # print('lolilol')
                     self.received_message.emit(msg_received)       #ON NE PEUT PAS ENVOYER  UN DICTIONNAIRE DONC ON VA TRICHER MAIS CE SERA PLUS LOURD
                 except:     #PREMIERE FOIS SI CA MARCHE PAS : A CAUSE DE LA LISTE DES CHANNELS
                     if "channelList" in msg_received:
-                        print("H1")
-                        part1 = msg_received.split("<KTN>")[0]          #on fait passer d'abord la liste des channels
-                        self.received_message.emit(part1)
+                        channelsListReceived = msg_received.split("<KTN>")[0]          #on fait passer d'abord la liste des channels
+                        self.received_message.emit(channelsListReceived)
 
-                        part2 = msg_received.split("<KTN>")[1]      #puis l'historique
+                        rest_of_the_message = msg_received.split("<KTN>")[1]      #puis l'historique
 
-                        history = history + part2
-                        try:
-                            json.loads(history)
-                            self.received_message.emit(history)
-                        except:
-                            print('H5')
-                            pass
+                        print(type(self.history))
+                        self.history = self.checkIfMsgIsInCorrectFormat(checked_msg=rest_of_the_message, store_in_var=str(self.history))
 
                     else:                   #maintenant si ca marche pas c'est que le message n'est pas entier : on le stique dans var global history
-                        print('H2')
-                        history = history + msg_received
-                        try:
-                            print('H4')
-                            json.loads(history)             #teste si l'historique est complet = si le json n'a pas d'errreur
-                            self.received_message.emit(history)
-                            print('H6')
-                        except:
-                            print('H3')
-                            pass
+                        self.history = self.checkIfMsgIsInCorrectFormat(checked_msg=msg_received, store_in_var=str(self.history))
 
 
+    def checkIfMsgIsInCorrectFormat(self, checked_msg, store_in_var):
+        """si checked_msg n'a pas un format json correct, on store checked_msg dans store_in_var pour que la suite du json soit ajouté au prochain paquet envoyé par le serveur"""
+        new = store_in_var + checked_msg
+
+        try:
+            json.loads(new)
+            self.received_message.emit(new)
+            return new
+
+        except:
+            return new
+            pass
 
 
 class MainWindow(QMainWindow):

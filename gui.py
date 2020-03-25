@@ -43,7 +43,7 @@ class connectionWidgetOBJ(QWidget):
         self.main_V_lyt.addStretch()
 
         #input
-        name1_lb = QLabel('First name : ')
+        name1_lb = QLabel('Username : ')
         self.firstName_lne = QLineEdit()
         self.firstName_lne.setPlaceholderText('Boby')
         self.main_V_lyt.addWidget(name1_lb)
