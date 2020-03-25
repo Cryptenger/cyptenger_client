@@ -140,24 +140,30 @@ class MainWindow(QMainWindow):
         #if the user have given all the required informations the client starts
         if itIsOK == True:
             #close connection widget
-            self.connection_widget.close()
 
-            #BUILD SERVER
-            #creating a connection
-            self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_connection.connect((self.settings['adress'], int(self.settings['port'])))
-            print("Connection established on the port", self.settings['port'])
 
-            #starting server
-            self.threadpool = QtCore.QThreadPool()
-            print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+            try:        #si la connection est impossible, on affiche un message d'erreur et on attend
+                #BUILD SERVER
+                #creating a connection
+                self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.server_connection.connect((self.settings['adress'], int(self.settings['port'])))
+                print("Connection established on the port", self.settings['port'])
 
-            self.worker = Worker(parent = self)
-            self.workerThread = QtCore.QThread()
-            self.workerThread.started.connect(self.worker.run) #r Start the Run function
-            self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
-            self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
-            self.workerThread.start()
+                #starting server
+                self.threadpool = QtCore.QThreadPool()
+                print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+
+                self.worker = Worker(parent = self)
+                self.workerThread = QtCore.QThread()
+                self.workerThread.started.connect(self.worker.run) #r Start the Run function
+                self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
+                self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
+                self.workerThread.start()
+
+                self.connection_widget.close()
+            except:
+                print("Couldn't establish network communication with server")
+                print("Something's wrong. Maybe the server is not started. Check the port, the adress. ")
 
 
 
