@@ -100,6 +100,7 @@ class MainWindow(QMainWindow):
             self.cryptenger_win.settings.close()
         except:
             pass
+        sys.exit()
 
     def initWindow(self):                                                       #les self.settings de la fenêtre principale
         self.setGeometry(0, 0, 1280, 720)
