@@ -94,6 +94,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """fonction appelée (toute seule) quand l'utilisateur ferme cryptenger"""
+        self.server_connection.send("<Close_the_connection>")
         print("Cryptenger closed")
         try:    #on mettra ici toutes les fenêtres à fermer
             self.cryptenger_win.settings.close()
