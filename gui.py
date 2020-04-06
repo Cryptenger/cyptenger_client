@@ -221,7 +221,7 @@ class channelsListOBJ(QListWidget):
 
 
             widget = channelItemOBJ(channelName = self.channelsSENT[i])
-            print(self.channelsSENT[i])
+            # print(self.channelsSENT[i]) Debug pour afficher les channels
 
             item.setSizeHint(widget.sizeHint())
 
