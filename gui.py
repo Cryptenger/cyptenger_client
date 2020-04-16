@@ -155,9 +155,9 @@ class mainWidgetOBJ(QWidget):
         return int(listWidget.currentItem().text())
 
 
-    def addMessageToAChannel(self, msg, channel, addNotif=False):
+    def addMessageToAChannel(self, msg, channel, coloration, addNotif=False):
         """dit au channel de s'ajouter son message ;-)"""
-        self.channels[channel].addMessageToTheChannel(msg)
+        self.channels[channel].addMessageToTheChannel(msg, coloration)
 
 
 
@@ -281,8 +281,8 @@ class channelOBJ(QScrollArea):
         # self.setObjectName('box')
 
     #add message to the channel
-    def addMessageToTheChannel(self, message):
-        message = messagesOBJ(message=message)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
+    def addMessageToTheChannel(self, message, coloration):
+        message = messagesOBJ(message=message, coloration=coloration)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
         self.channel_lyt.addWidget(message)
         #scroll focus toujours le bas de la liste des messages
 
@@ -307,7 +307,7 @@ class channelOBJ(QScrollArea):
 class messagesOBJ(QGroupBox):
     """Le message qu'on va ajouter au channel"""
 
-    def __init__(self, message, *args, **kwargs):
+    def __init__(self, message, coloration, *args, **kwargs):
         super(messagesOBJ, self).__init__(*args, **kwargs)
         #layout
         self.lyt = QHBoxLayout()
@@ -320,11 +320,11 @@ class messagesOBJ(QGroupBox):
         messageJSON =  messageJSON["messageType"]
 
         #colors
-        color = [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
+        # color = [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
         values = "{h}, {s}, {v}".format(
-        h = color[0],
-        s = color[1],
-        v = color[2],
+        h = coloration[0],
+        s = coloration[1],
+        v = coloration[2],
         )
 
         #hour

@@ -113,6 +113,7 @@ class MainWindow(QMainWindow):
             "firstName" : self.connection_widget.firstName_lne.text(),
             "port" : self.connection_widget.port_lne.text(),
             "adress" : self.connection_widget.adresse_lne.text(),
+            "color" : [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
             }
 
         #check if the user have given all the required informations
@@ -206,8 +207,8 @@ class MainWindow(QMainWindow):
         for i in range(0, len(history)):
             message = history[i]
             channel = json.loads(message)["messageType"]['channel']  # récupère le channel
-
-            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel)) # ajout du message
+            color = json.loads(message)["messageType"]['coloration']
+            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), coloration=color) # ajout du message
         print("\n### END - Receiving History ###")
 
 
@@ -235,12 +236,14 @@ class MainWindow(QMainWindow):
                 "messageType":{
                     "message": message,
                     "username": self.settings["firstName"],
+                    "coloration": self.settings["color"],
                     "channel": channel,
                     "date": date,
                 }
             }
 
             message = json.dumps(messageDict)
+            print('Le message est', message)
 
             #send message
             #       self.server_connection.send(self.crypting.sym_encrypt(message).encode())
@@ -272,6 +275,8 @@ class MainWindow(QMainWindow):
 
         channel = message_in_python["messageType"]["channel"]
         username = message_in_python["messageType"]["username"]
+        color = message_in_python["messageType"]["coloration"]
+        print(color)
 
         #on ajoute une notification seulement si le message vient d'un autre utilisateur et qu'il est affiché dans un autre channel que celui actuellement sélectionné
         addNotif = False
@@ -279,7 +284,7 @@ class MainWindow(QMainWindow):
             addNotif=True
 
         #ajout du message
-        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)
+        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, coloration=color, addNotif=addNotif)
 
 
 
