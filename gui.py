@@ -63,10 +63,12 @@ class connectionWidgetOBJ(QWidget):
 
         space_lb = QLabel('\n')
         self.start_btn = QPushButton('Connection')
-        #self.start_btn.setStyleSheet("align-item: center")
-        self.main_V_lyt.addWidget(space_lb)
-        self.main_V_lyt.addWidget(self.start_btn)
+        self.start_btn.setFixedWidth(1000)
+        self.connection_lyt = QHBoxLayout()
+        self.connection_lyt.addWidget(self.start_btn)
 
+        self.main_V_lyt.addWidget(space_lb)
+        self.main_V_lyt.addLayout(self.connection_lyt)
         self.main_V_lyt.addStretch()
 
 
@@ -77,8 +79,8 @@ class mainWidgetOBJ(QWidget):
         super(mainWidgetOBJ, self).__init__(*args, **kwargs)
         #variables
         self.leftColumnWidth = 300
-        self.hudHeight = 65
-        self.serverHeight = 150
+        self.hudHeight = 45
+        self.serverHeight = 50
         self.serverName = serverName
         self.username = Username
         self.channels = []  #objects
@@ -100,8 +102,8 @@ class mainWidgetOBJ(QWidget):
 
         #layout
         self.main_grid_lyt = QGridLayout()
-        self.main_grid_lyt.setHorizontalSpacing(2)      #STYLE
-        self.main_grid_lyt.setVerticalSpacing(2)
+        # self.main_grid_lyt.setHorizontalSpacing(2)      #STYLE
+        # self.main_grid_lyt.setVerticalSpacing(2)
         self.setLayout(self.main_grid_lyt)
 
 
@@ -114,6 +116,7 @@ class mainWidgetOBJ(QWidget):
 
         #objects settings
         self.CHANNEL_lyt = QVBoxLayout()
+
         self.main_grid_lyt.addLayout(self.CHANNEL_lyt, 0, 1, 2, 1)
         self.channelsList.itemClicked.connect(functools.partial(self.setChannels, listWidget=self.channelsList))
 
@@ -179,7 +182,8 @@ class mainWidgetOBJ(QWidget):
             self.channelsList.selectChannelsWidgetList[channel].notif.setText("")
         else:
             self.channelsList.selectChannelsWidgetList[channel].newMsg += 1
-            self.channelsList.selectChannelsWidgetList[channel].notif.setText(str(self.channelsList.selectChannelsWidgetList[channel].newMsg))
+            notif_txt = "  " + str(self.channelsList.selectChannelsWidgetList[channel].newMsg) + "  "
+            self.channelsList.selectChannelsWidgetList[channel].notif.setText(notif_txt)
 
     def openSettings(self):
         """open the settings window creating an object defined in the class settingsOBJ"""
@@ -209,7 +213,6 @@ class channelsListOBJ(QListWidget):
         self.buildChannelsList()
 
     def buildChannelsList(self):
-
         for i in range(len(self.channelsSENT)):
             # print(self.channelsSENT[i])
             #item
@@ -248,8 +251,10 @@ class channelItemOBJ(QGroupBox):
         lb = QLabel(channelName)
         self.channelsListOBJ_layout.addWidget(lb)
 
+        self.channelsListOBJ_layout.addStretch()
 
         self.notif = QLabel(str(self.newMsg))
+        self.notif.setStyleSheet("background: red; border-radius: 5px")
         self.channelsListOBJ_layout.addWidget(self.notif)
 
 
@@ -378,7 +383,9 @@ class inputOBJ(QGroupBox):
         """
         #objects
         self.input_lne = QLineEdit()
+        self.input_lne.setStyleSheet("border: 0px solid transparent")
         self.input_lne.setPlaceholderText('Hit your message here ;-)')
+
         #layout
         self.input_lyt = QHBoxLayout()
         self.input_lyt.addWidget(self.input_lne)
@@ -420,9 +427,12 @@ class serverUI_OBJ(QGroupBox):
         this is the widget located on the top left and corner displaying the server's informations
         """
         #objects
+        serverInfos = QLabel("About server\n")
+        serverInfos.setStyleSheet("color: gray")
         self.serverName_lb = QLabel(str(self.parent.serverName))
         #layout
         self.serverInf_lyt = QGridLayout()
+        self.serverInf_lyt.addWidget(serverInfos)
         self.serverInf_lyt.addWidget(self.serverName_lb)
         #widget
 
@@ -446,14 +456,16 @@ class userUI_OBJ(QGroupBox):
 
     def buildUserUI(self):
         #objects
+        username = QLabel(self.parent.username)
         self.settings_btn = QPushButton(QtGui.QIcon("./assets/img/settings_icon.png"), '')
+        self.settings_btn.setStyleSheet('border: 0px solid transparent')
         self.settings_btn.clicked.connect(self.parent.openSettings)
-        lb = QLabel(self.parent.username)
 
         #layout
         self.hud_lyt = QHBoxLayout()
+        self.hud_lyt.addWidget(username)
+        self.hud_lyt.addStretch()
         self.hud_lyt.addWidget(self.settings_btn)
-        self.hud_lyt.addWidget(lb)
 
         #widget
         self.setLayout(self.hud_lyt)

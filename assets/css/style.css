@@ -24,6 +24,10 @@ QPushButton{
 
 }
 
+QPushButton:hover{
+  background-color: #3b3b3b;
+}
+
 QPushButton:pressed{
     background: orange;
 }
@@ -92,8 +96,6 @@ QLabel#Pixmap{
   justify-content: center; */
   background-image: url("assets/img/cryptenger_flag.jpg");
 }
-
-
 
 QGroupBox{
     /* padding: 5px; */
