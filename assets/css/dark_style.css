@@ -1,0 +1,108 @@
+/*
+#262626 : background
+#3b3b3b : borders
+
+*/
+*{
+    background: #262626;
+    color: white;
+    border: 1px solid #3b3b3b;
+    /* border-radius: 4px; */
+    margin: 0px;
+    padding: 0px
+
+}
+
+*:hover{
+    /*border: 2px solid gray;*/
+}
+
+QPushButton{
+    color: white;
+    min-height: 2em;
+    min-width: 5em;;
+
+}
+
+QPushButton:hover{
+  background-color: #3b3b3b;
+}
+
+QPushButton:pressed{
+    background: orange;
+}
+
+QLineEdit{
+    min-height: 2em;
+}
+
+QLabel{
+    border: 0px;
+}
+
+QLabel:hover{
+    border: 2px solid transparent;
+}
+/*
+QTabBar::tab{       tab selector/button
+    color: white;
+    background: transparent;
+    border: 10px solid transparent;
+    border-radius: 4px;
+}
+
+QTabBar::tab:selected{
+    background: orange;
+    border: 10px solid transparent;
+    border-radius: 4px;
+}
+
+QTabWidget::pane{
+  background: #262626;
+  border: 5px solid #262626;  truc relou
+  border-radius: 3px;
+  padding: 0.5em;
+}*/
+
+QScrollBar{            /* le fond*/
+  border: 0px;  /* border autour du truc qu'on tire*/
+  background: #262626;
+}
+
+QScrollBar::handle{    /*le truc qu'on tire*/
+  background: #323232;
+  border-radius: 4px;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page{   /*le reste des petits points sur le fond*/
+  background: #262626;
+}
+
+QScrollArea{
+  border: 0px;
+}
+
+QLabel#Pixmap{
+  max-width: 1000px;
+  max-height: 200px;
+  height: 100px;
+  /* background-position: center; */
+  /* background-size:  contain; */
+  /* min-width: 500px;
+  min-height: 100px; */
+  /* align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; */
+  background-image: url("assets/img/cryptenger_flag.jpg");
+}
+
+QGroupBox{
+    /* padding: 5px; */
+    /* max-height: 3em; */
+    /* background: #323232;; */
+}
+
+#box{
+  /* background: red; */
+}

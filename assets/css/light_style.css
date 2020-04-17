@@ -4,9 +4,9 @@
 
 */
 *{
-    background: #262626;
-    color: white;
-    border: 1px solid #3b3b3b;
+    background: white;
+    color: black;
+    border: 1px solid gray;
     /* border-radius: 4px; */
     margin: 0px;
     padding: 0px
@@ -18,10 +18,14 @@
 }
 
 QPushButton{
-    color: white;
+    color: gray;
     min-height: 2em;
     min-width: 5em;;
 
+}
+
+QPushButton:hover{
+  background-color: #3b3b3b;
 }
 
 QPushButton:pressed{
@@ -93,12 +97,11 @@ QLabel#Pixmap{
   background-image: url("assets/img/cryptenger_flag.jpg");
 }
 
-
-
 QGroupBox{
     /* padding: 5px; */
     /* max-height: 3em; */
     /* background: #323232;; */
+    border: 0px;
 }
 
 #box{
