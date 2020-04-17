@@ -18,7 +18,8 @@
       "window_location": [0, 30],
       "window_size": [1280, 720],
       "window_minimum_size": [800, 300],
-      "left_column_width": 300,
+      "left_column_width": 270,
+      "right_column_width": 180,
       "user_ui_height": 45,
       "server_ui_height": 50
     },

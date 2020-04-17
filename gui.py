@@ -112,11 +112,14 @@ class mainWidgetOBJ(QWidget):
         self.userUI = userUI_OBJ(parent = self)
         self.inputUI = inputOBJ(parent = self)
 
+        self.userList = usersListOBJ(parent = self)
+
         #objects settings
         self.CHANNEL_lyt = QVBoxLayout()
 
         self.main_grid_lyt.addLayout(self.CHANNEL_lyt, 0, 1, 2, 1)
         self.channelsList.itemClicked.connect(functools.partial(self.setChannels, listWidget=self.channelsList))
+
 
         self.setChannels(channelClicked='0')
     #***************************************************************************
@@ -156,11 +159,10 @@ class mainWidgetOBJ(QWidget):
         return int(listWidget.currentItem().text())
 
 
-    def addMessageToAChannel(self, msg, channel, coloration, addNotif=False):
+    def addMessageToAChannel(self, msg, channel, coloration, isHistory = False, addNotif=False):
         """dit au channel de s'ajouter son message ;-)"""
         self.channels[channel].addMessageToTheChannel(msg, coloration)
 
-        # self.channelsList.selectChannelsWidgetList[channel].channelsListOBJ_layout.addWidget(label)
         if self.channelsList.selectChannelsWidgetList[channel].newMsg == 0:
             # print("ONE")
             pass
@@ -176,12 +178,18 @@ class mainWidgetOBJ(QWidget):
 
                 notification.notify(
                     app_name="Cryptenger",
-                    title=message["messageType"]["username"],
-                    message=message["messageType"]["message"],
-                    ticker= "what",
+                    title= message["messageType"]["username"],
+                    message= message["messageType"]["message"],
                     app_icon=self.app_settings["cryptenger_icon"],  # e.g. 'C:\\icon_32x32.ico'
                     timeout=5,  # seconds
                 )
+
+        #si ce n'est pas l'historique ca veut dier que le message vient de quelqu'un de connecté donc on l'ajoute à la user list
+        if isHistory == False:
+            # self.cryptenger_win.user_list.add_user_to_list()
+            message = json.loads(msg)
+            self.userList.add_user_to_list(username=message["messageType"]["username"])
+
 
     def changeNotif(self, channel, reset=False):
         """change le nombre de notifications
@@ -210,6 +218,59 @@ class mainWidgetOBJ(QWidget):
 
 
 
+class usersListOBJ(QGroupBox):
+    """La liste des utilisateurs actuellement connectés au serveur"""
+
+    def __init__(self, parent):
+        super(usersListOBJ, self).__init__()
+        self.parent = parent
+        self.connected_users = []
+
+        self.setFixedWidth(self.parent.app_settings["cryptenger_win"]["right_column_width"])
+
+        connected_members_lb = QLabel('Connected members')
+        connected_members_lb.setObjectName("groupbox_title")
+
+        self.user_list = QListWidget()
+        self.user_list.setStyleSheet('border: 0px')
+        for i in self.connected_users:
+            item = QListWidgetItem()
+
+            widget = channelItemOBJ(channelName = i, is_a_channel=False)
+            item.setSizeHint(widget.sizeHint())
+
+            self.user_list.addItem(item)
+            self.user_list.setItemWidget(item, widget)
+
+        self.user_list_lyt = QVBoxLayout(self)
+        self.user_list_lyt.addWidget(connected_members_lb)
+        self.user_list_lyt.addWidget(self.user_list)
+        self.setLayout(self.user_list_lyt)
+
+        self.parent.main_grid_lyt.addWidget(self, 0, 2, 3, 1)
+
+    def add_user_to_list(self, username):
+        if username not in self.connected_users:
+            item = QListWidgetItem()
+
+            widget = channelItemOBJ(channelName = username, is_a_channel=False)
+            item.setSizeHint(widget.sizeHint())
+
+            self.user_list.addItem(item)
+            self.user_list.setItemWidget(item, widget)
+            self.connected_users.append(username)
+        print('hello')
+
+class usersListItemOBJ(QGroupBox):
+    """docstring for usersListItemOBJ."""
+
+    def __init__(self):
+        super(usersListItemOBJ, self).__init__()
+        pass
+
+
+
+
 class channelsListOBJ(QListWidget):
     """La liste des boutons sur lesquels on clique pour sélectionner un channel"""
 
@@ -219,7 +280,6 @@ class channelsListOBJ(QListWidget):
         self.parent = parent
         self.channelsSENT = channels    #liste contenant toutes les infos à entrer dans les channels
         self.selectChannelsWidgetList = []       #liste contenant tous les item pour sélectionner les channels
-        self.setObjectName('box')
         self.buildChannelsList()
 
     def buildChannelsList(self):
@@ -227,11 +287,11 @@ class channelsListOBJ(QListWidget):
             # print(self.channelsSENT[i])
             #item
             item = QListWidgetItem(str(i))  #le i est pour avoir un index pour sélectionner plus tard le bon channel quand on cliquera dessus
-            item.setFont(QtGui.QFont('SansSerif', 1))       #loul le 1 c'est pour cacherr cet index dégueulace
+            font = QtGui.QFont('SansSerif', 1)
+            # font.setStyleSheet('color: red')
+            item.setFont(font)       #loul le 1 c'est pour cacherr cet index
             # item.setPalette()
             #widget
-
-
 
             widget = channelItemOBJ(channelName = self.channelsSENT[i])
             # print(self.channelsSENT[i]) Debug pour afficher les channels
@@ -247,26 +307,41 @@ class channelsListOBJ(QListWidget):
 
         self.parent.main_grid_lyt.addWidget(self, 1, 0)
 
-class channelItemOBJ(QGroupBox):
+class channelItemOBJ(QWidget):
     """Le bouton sur lequel on clique quand on sélectionne un channel."""
 
-    def __init__(self, channelName):
+    def __init__(self, channelName, is_a_channel=True):
         super(channelItemOBJ, self).__init__()
         self.newMsg = 0
 
-        self.channelsListOBJ_layout = QHBoxLayout()
-        self.setLayout(self.channelsListOBJ_layout)
+        self.setStyleSheet('border: 0px')
 
-        print(channelName)
-        lb = QLabel(channelName)
-        self.channelsListOBJ_layout.addWidget(lb)
+        self.channelsListOBJ_layout = QHBoxLayout()
+
+        channel_name = QLabel(channelName)
+        channel_name.setStyleSheet("""
+            text-align: left;
+            padding-left: 1em;
+            background: transparent;
+            """)
+
+        self.channelsListOBJ_layout.addWidget(channel_name)
 
         self.channelsListOBJ_layout.addStretch()
 
-        self.notif = QLabel(str(self.newMsg))
-        self.notif.setStyleSheet("background: red; border-radius: 5px")
-        self.channelsListOBJ_layout.addWidget(self.notif)
+        if is_a_channel == True:
+            channel_name.setStyleSheet("""
+                text-align: left;
+                padding-left: 1em;
+                background: transparent;
+                min-width: 10em;
+                """)
 
+            self.notif = QLabel(str(self.newMsg))
+            self.notif.setStyleSheet("background: #7f7f7f; border-radius: 5px")
+            self.channelsListOBJ_layout.addWidget(self.notif)
+
+        self.setLayout(self.channelsListOBJ_layout)
 
 class channelOBJ(QScrollArea):
     """Le channel lui même contenant les messages"""
@@ -307,7 +382,6 @@ class channelOBJ(QScrollArea):
         self.scrollDown()
 
 
-
     def scrollDown(self):
         self.ensureWidgetVisible(self.space_lb)     #, 500, 200
         # self.ensureWidgetVisible(self.messagesList[-1])
@@ -328,6 +402,8 @@ class messagesOBJ(QGroupBox):
         self.lyt = QHBoxLayout()
         self.setLayout(self.lyt)
         self.setFixedHeight(50)
+        self.setStyleSheet("border: 0px")
+        self.setObjectName("messagesOBJ")
 
         #messageProcessing
         messageJSON = json.loads(message)
@@ -374,6 +450,7 @@ class messagesOBJ(QGroupBox):
         # self.message_lb = QLabel(messageJSON["message"])
         self.message_lb = QTextEdit(messageJSON["message"])
         self.message_lb.setReadOnly(True)
+        self.message_lb.setStyleSheet("border: 0px")
         self.lyt.addWidget(self.message_lb)
 
         self.setStyleSheet('box')
@@ -420,6 +497,7 @@ class settingsOBJ(QDialog):
         self.setGeometry(location[0]+100, location[1]+100, scale[0]/2, scale[1]/2)
         self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
         self.setWindowTitle('Settings')
+        self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
         self.show()
 
         with open(parent.app_settings["default_style"]) as style:
@@ -441,7 +519,7 @@ class serverUI_OBJ(QGroupBox):
         """
         #objects
         serverInfos = QLabel("About server\n")
-        serverInfos.setStyleSheet("color: gray")
+        serverInfos.setObjectName("groupbox_title")
         self.serverName_lb = QLabel(str(self.parent.serverName))
         #layout
         self.serverInf_lyt = QGridLayout()

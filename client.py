@@ -68,6 +68,9 @@ class MainWindow(QMainWindow):
 
         self.crypting = Crypting()
 
+        with open(self.app_settings["default_style"], "r") as style:
+            self.setStyleSheet(style.read())
+
     def closeEvent(self, event):
         """fonction appelée (toute seule) quand l'utilisateur ferme cryptenger"""
         self.server_connection.send("<Close_the_connection>".encode())
@@ -94,8 +97,7 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
         self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
 
-        with open(self.app_settings["default_style"], "r") as style:
-            self.setStyleSheet(style.read())
+
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
         #fenêtre de connection
@@ -224,7 +226,7 @@ class MainWindow(QMainWindow):
             message = history[i]
             channel = json.loads(message)["messageType"]['channel']  # récupère le channel
             color = json.loads(message)["messageType"]['coloration']
-            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), coloration=color) # ajout du message
+            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), isHistory=True, coloration=color) # ajout du message
         print("\n### END - Receiving History ###")
 
 
