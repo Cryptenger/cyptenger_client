@@ -16,6 +16,7 @@ except:
 from gui import mainWidgetOBJ, connectionWidgetOBJ
 from crypting import Crypting
 
+
 #les commentaires d'explications sont disposés dans les déclarations de fonctions principalement. Les pararmètres ne sont pas forcément expliqués lors des appels de fonctions.
 
 #le serveur n'envoieque des strings pures et par paquets de 1 Ko
@@ -78,26 +79,40 @@ class MainWindow(QMainWindow):
         sys.exit()
 
     def initWindow(self):                                                       #les self.settings de la fenêtre principale
-        self.setGeometry(0, 0, 1280, 720)
+
+        with open("./settings.json", "r") as app_settings:
+            print(app_settings)
+            self.app_settings = json.load(app_settings)
+        self.setGeometry(
+            self.app_settings["cryptenger_win"]["window_location"][0],
+            self.app_settings["cryptenger_win"]["window_location"][1],
+            self.app_settings["cryptenger_win"]["window_size"][0],
+            self.app_settings["cryptenger_win"]["window_size"][1]
+        )
         self.setWindowTitle('Cryptenger')
         self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
+        self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
+        self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
 
-        with open('./assets/css/style.css') as style:
+        with open(self.app_settings["default_style"], "r") as style:
             self.setStyleSheet(style.read())
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
         #fenêtre de connection
         self.connection_widget = connectionWidgetOBJ()      #on appelle la fenêtre de connection
         self.connection_widget.start_btn.clicked.connect(self.connectAndRunSever)
+        self.connection_widget.firstName_lne.returnPressed.connect(self.connectAndRunSever)
+        self.connection_widget.adresse_lne.returnPressed.connect(self.connectAndRunSever)
+        self.connection_widget.port_lne.returnPressed.connect(self.connectAndRunSever)
 
         #layout de la fenêtre principale
         self.main_V_lyt = QVBoxLayout()
         self.main_V_lyt.addWidget(self.connection_widget)
 
         """TEMP PARCE QUE RELOU"""
-        self.connection_widget.firstName_lne.setText('Cosius')
-        self.connection_widget.adresse_lne.setText('localhost')
-        self.connection_widget.port_lne.setText('25565')
+        self.connection_widget.firstName_lne.setText(self.app_settings["default_login_data"]["username"])
+        self.connection_widget.adresse_lne.setText(self.app_settings["default_login_data"]["adress"])
+        self.connection_widget.port_lne.setText(self.app_settings["default_login_data"]["port"])
 
         #widget
         widget = QWidget()
@@ -109,7 +124,7 @@ class MainWindow(QMainWindow):
 
 
     def connectAndRunSever(self): # Fonction d'initialisation avec le serveur
-        self.settings = {
+        self.login_settings = {
             "firstName" : self.connection_widget.firstName_lne.text(),
             "port" : self.connection_widget.port_lne.text(),
             "adress" : self.connection_widget.adresse_lne.text(),
@@ -118,8 +133,8 @@ class MainWindow(QMainWindow):
 
         #check if the user have given all the required informations
         itIsOK = True
-        for i in self.settings:
-            if self.settings[i]=='':
+        for i in self.login_settings:
+            if self.login_settings[i]=='':
                 print('You must give a ' + i)
                 itIsOK = False
 
@@ -128,32 +143,32 @@ class MainWindow(QMainWindow):
         if itIsOK == True:
             #close connection widget
 
-            # try:        #si la connection est impossible, on affiche un message d'erreur et on attend
+            try:        #si la connection est impossible, on affiche un message d'erreur et on attend
                 #BUILD SERVER
                 #creating a connection
-            self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_connection.connect((self.settings['adress'], int(self.settings['port'])))
-            print("Connection established on the port " + self.settings['port'] + "\n")
+                self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.server_connection.connect((self.login_settings['adress'], int(self.login_settings['port'])))
+                print("Connection established on the port " + self.login_settings['port'] + "\n")
 
-            self.initEncryption()
-            self.setupApplication()
+                self.initEncryption()
+                self.setupApplication()
 
-            #starting server
-            self.threadpool = QtCore.QThreadPool()
-            # print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+                #starting server
+                self.threadpool = QtCore.QThreadPool()
+                # print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-            self.worker = Worker(parent = self)
-            self.workerThread = QtCore.QThread()
-            self.workerThread.started.connect(self.worker.run) #r Start the Run function
-            self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
-            self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
-            self.workerThread.start()
+                self.worker = Worker(parent = self)
+                self.workerThread = QtCore.QThread()
+                self.workerThread.started.connect(self.worker.run) #r Start the Run function
+                self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
+                self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
+                self.workerThread.start()
 
-            self.connection_widget.close()
-            # except:
-            #     print("Couldn't establish network communication with server")
-            #     print("Something's wrong. Maybe the server is not started. Check the port, the address.")
-            #     print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
+                self.connection_widget.close()
+            except:
+                print("Couldn't establish network communication with server")
+                print("Something's wrong. Maybe the server is not started. Check the port, the address.")
+                print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
 
     def initEncryption(self):
         print("Initlialize encryption !\n")
@@ -174,8 +189,9 @@ class MainWindow(QMainWindow):
         # maintenant qu'on a TOUTES les informations nécessaires à la création de l'interface utilisateur finale on la crée
         self.cryptenger_win = mainWidgetOBJ(
             parentObject=self,
-            serverName=self.settings['adress'],
-            Username=self.settings['firstName'],
+            # app_settings=self.app_settings,
+            serverName=self.login_settings['adress'],
+            Username=self.login_settings['firstName'],
             channelsNames=self.channelList,
         )
 
@@ -235,8 +251,8 @@ class MainWindow(QMainWindow):
             messageDict = {
                 "messageType":{
                     "message": message,
-                    "username": self.settings["firstName"],
-                    "coloration": self.settings["color"],
+                    "username": self.login_settings["firstName"],
+                    "coloration": self.login_settings["color"],
                     "channel": channel,
                     "date": date,
                 }
@@ -280,7 +296,7 @@ class MainWindow(QMainWindow):
 
         #on ajoute une notification seulement si le message vient d'un autre utilisateur et qu'il est affiché dans un autre channel que celui actuellement sélectionné
         addNotif = False
-        if username != self.settings["firstName"] and not channel == current_channel :          #ET SI CURRENT CHANNEL DIFFERENT DE CHANNEL DU MESSAGE ENVOYE
+        if username != self.login_settings["firstName"] and not channel == current_channel:          #ET SI CURRENT CHANNEL DIFFERENT DE CHANNEL DU MESSAGE ENVOYE
             addNotif=True
 
         #ajout du message

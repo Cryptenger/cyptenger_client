@@ -1,6 +1,7 @@
 import sys, random, os, functools, datetime, json
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
+from plyer import notification
 
 class connectionWidgetOBJ(QWidget):
     """docstring for connectionWidgetOBJ."""
@@ -78,13 +79,10 @@ class mainWidgetOBJ(QWidget):
     def __init__(self, parentObject, Username, serverName, channelsNames, *args, **kwargs):
         super(mainWidgetOBJ, self).__init__(*args, **kwargs)
         #variables
-        self.leftColumnWidth = 300
-        self.hudHeight = 45
-        self.serverHeight = 50
+        self.app_settings = parentObject.app_settings
         self.serverName = serverName
         self.username = Username
         self.channels = []  #objects
-        self.historics = ['msg1', 'msg2', 'msg3'] #text
         self.channelsNames= channelsNames #['salon 1', 'salon 2', 'salon 3']
         #
         self.buildWidget()
@@ -92,7 +90,7 @@ class mainWidgetOBJ(QWidget):
         #the shortcut to close Cryptenger
         self.quit_action = QAction(self)
         self.quit_action.triggered.connect(functools.partial(self.quitCryptenger, toClose=parentObject))
-        self.quit_action.setShortcut('Ctrl+Q')
+        self.quit_action.setShortcut(self.app_settings["shortcuts"]["quit_cryptenger"])
         self.addAction(self.quit_action)
 
 
@@ -162,16 +160,28 @@ class mainWidgetOBJ(QWidget):
         """dit au channel de s'ajouter son message ;-)"""
         self.channels[channel].addMessageToTheChannel(msg, coloration)
 
-
-
-        # NOTIFICATION              pour l'instant on n'affiche pas le nombre de messages (trop compliqué -> faut reset etc...)         JUSTE PASTILLE ROUGE
-
         # self.channelsList.selectChannelsWidgetList[channel].channelsListOBJ_layout.addWidget(label)
         if self.channelsList.selectChannelsWidgetList[channel].newMsg == 0:
-            print("ONE")
+            # print("ONE")
+            pass
 
         if addNotif != False:
-            self.changeNotif(channel)
+
+
+            if self.app_settings["notifications"]["cryptenger_notif"] == True:
+                self.changeNotif(channel)
+
+            if  self.app_settings["notifications"]["desktop_notif"] == True:
+                message = json.loads(msg)
+
+                notification.notify(
+                    app_name="Cryptenger",
+                    title=message["messageType"]["username"],
+                    message=message["messageType"]["message"],
+                    ticker= "what",
+                    app_icon=self.app_settings["cryptenger_icon"],  # e.g. 'C:\\icon_32x32.ico'
+                    timeout=5,  # seconds
+                )
 
     def changeNotif(self, channel, reset=False):
         """change le nombre de notifications
@@ -192,7 +202,7 @@ class mainWidgetOBJ(QWidget):
         print(self.pos().y())
         print(str(self.size()))
         print(self.height())
-        self.settings = settingsOBJ(location=[self.pos().x(), self.pos().y()], scale=[self.width(), self.height()])
+        self.settings = settingsOBJ(parent=self, location=[self.pos().x(), self.pos().y()], scale=[self.width(), self.height()])
 
     def quitCryptenger(self, toClose):
         """ to close Cryptenger """
@@ -228,7 +238,7 @@ class channelsListOBJ(QListWidget):
 
             item.setSizeHint(widget.sizeHint())
 
-            self.setFixedWidth(self.parent.leftColumnWidth)
+            self.setFixedWidth(self.parent.app_settings["cryptenger_win"]["left_column_width"])
 
             self.selectChannelsWidgetList.append(widget)
             self.addItem(item)
@@ -287,7 +297,7 @@ class channelOBJ(QScrollArea):
 
     #add message to the channel
     def addMessageToTheChannel(self, message, coloration):
-        message = messagesOBJ(message=message, coloration=coloration)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
+        message = messagesOBJ(parent=self, message=message, coloration=coloration)                                  #on déclare l'objet messagesOBJ  (on ajoute le message à l'UI)
         self.channel_lyt.addWidget(message)
         #scroll focus toujours le bas de la liste des messages
 
@@ -312,7 +322,7 @@ class channelOBJ(QScrollArea):
 class messagesOBJ(QGroupBox):
     """Le message qu'on va ajouter au channel"""
 
-    def __init__(self, message, coloration, *args, **kwargs):
+    def __init__(self, parent, message, coloration, *args, **kwargs):
         super(messagesOBJ, self).__init__(*args, **kwargs)
         #layout
         self.lyt = QHBoxLayout()
@@ -361,7 +371,9 @@ class messagesOBJ(QGroupBox):
 
 
         #message
-        self.message_lb = QLabel(messageJSON["message"])
+        # self.message_lb = QLabel(messageJSON["message"])
+        self.message_lb = QTextEdit(messageJSON["message"])
+        self.message_lb.setReadOnly(True)
         self.lyt.addWidget(self.message_lb)
 
         self.setStyleSheet('box')
@@ -402,14 +414,15 @@ class inputOBJ(QGroupBox):
 class settingsOBJ(QDialog):
     """Ben les settings quoi..."""
 
-    def __init__(self, scale, location=[100, 100], *args, **kwargs):
+    def __init__(self, parent, scale, location=[100, 100], *args, **kwargs):
         super(settingsOBJ, self).__init__(*args, **kwargs)
 
         self.setGeometry(location[0]+100, location[1]+100, scale[0]/2, scale[1]/2)
+        self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
         self.setWindowTitle('Settings')
         self.show()
 
-        with open('./assets/css/style.css') as style:
+        with open(parent.app_settings["default_style"]) as style:
             self.setStyleSheet(style.read())
 
 
@@ -437,13 +450,11 @@ class serverUI_OBJ(QGroupBox):
         #widget
 
         self.setLayout(self.serverInf_lyt)
-        self.setFixedWidth(self.parent.leftColumnWidth)
-        self.setFixedHeight(self.parent.serverHeight)
+        self.setFixedWidth(self.parent.app_settings["cryptenger_win"]["left_column_width"])
+        self.setFixedHeight(self.parent.app_settings["cryptenger_win"]["server_ui_height"])
 
         #add widget to main layout
         self.parent.main_grid_lyt.addWidget(self, 0, 0)
-
-
 
 
 class userUI_OBJ(QGroupBox):
@@ -469,8 +480,8 @@ class userUI_OBJ(QGroupBox):
 
         #widget
         self.setLayout(self.hud_lyt)
-        self.setFixedWidth(self.parent.leftColumnWidth)
-        self.setFixedHeight(self.parent.hudHeight)
+        self.setFixedWidth(self.parent.app_settings["cryptenger_win"]["left_column_width"])
+        self.setFixedHeight(self.parent.app_settings["cryptenger_win"]["user_ui_height"])
 
         #add widget to main layout
         self.parent.main_grid_lyt.addWidget(self, 2, 0, 1, 1)
