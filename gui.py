@@ -329,6 +329,20 @@ class channelsListOBJ(QGroupBox):
         top_infos_lyt.addWidget(self.current_channel)
 
 
+        self.current_channel = QLabel('current')
+
+        top_infos_widget = QWidget()
+        top_infos_lyt = QHBoxLayout(top_infos_widget)
+        top_infos_lyt.addWidget(channels_lb)
+        top_infos_lyt.addStretch()
+        top_infos_lyt.addWidget(self.current_channel)
+
+
+
+        self.channel_list_lyt = QVBoxLayout(self)
+        self.channel_list_lyt.addWidget(top_infos_widget)
+        self.channel_list_lyt.addWidget(self.channel_list_widget)
+        self.setLayout(self.channel_list_lyt)
 
         self.channel_list_lyt = QVBoxLayout(self)
         self.channel_list_lyt.addWidget(top_infos_widget)
