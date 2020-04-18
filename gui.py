@@ -287,6 +287,7 @@ class usersListOBJ(QGroupBox):
 
             self.total_connected_users.setText("Logged users : " + str(len(self.connected_users)))
 
+            self.total_connected_users.setText("Logged users : " + str(len(self.connected_users)))
 
 
 class channelsListOBJ(QGroupBox):
@@ -329,6 +330,17 @@ class channelsListOBJ(QGroupBox):
         top_infos_lyt.addWidget(self.current_channel)
 
 
+
+
+        self.channel_list_lyt = QVBoxLayout(self)
+        self.channel_list_lyt.addWidget(top_infos_widget)
+        self.channel_list_lyt.addWidget(self.channel_list_widget)
+        self.setLayout(self.channel_list_lyt)
+
+        self.channel_list_lyt = QVBoxLayout(self)
+        self.channel_list_lyt.addWidget(top_infos_widget)
+        self.channel_list_lyt.addWidget(self.channel_list_widget)
+        self.setLayout(self.channel_list_lyt)
 
         self.channel_list_lyt = QVBoxLayout(self)
         self.channel_list_lyt.addWidget(top_infos_widget)
