@@ -68,9 +68,6 @@ class MainWindow(QMainWindow):
 
         self.crypting = Crypting()
 
-        with open(self.app_settings["default_style"], "r") as style:
-            self.setStyleSheet(style.read())
-
     def closeEvent(self, event):
         """fonction appelée (toute seule) quand l'utilisateur ferme cryptenger"""
         self.server_connection.send("<Close_the_connection>".encode())
@@ -97,6 +94,8 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
         self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
 
+        with open(self.app_settings["default_style"], "r") as style:
+            self.setStyleSheet(style.read())
 
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
@@ -129,8 +128,7 @@ class MainWindow(QMainWindow):
         self.login_settings = {
             "firstName" : self.connection_widget.firstName_lne.text(),
             "port" : self.connection_widget.port_lne.text(),
-            "adress" : self.connection_widget.adresse_lne.text(),
-            "color" : [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
+            "adress" : self.connection_widget.adresse_lne.text()
             }
 
         #check if the user have given all the required informations
@@ -225,8 +223,7 @@ class MainWindow(QMainWindow):
         for i in range(0, len(history)):
             message = history[i]
             channel = json.loads(message)["messageType"]['channel']  # récupère le channel
-            color = json.loads(message)["messageType"]['coloration']
-            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), isHistory=True, coloration=color) # ajout du message
+            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), isHistory=True) # ajout du message
         print("\n### END - Receiving History ###")
 
 
@@ -254,7 +251,6 @@ class MainWindow(QMainWindow):
                 "messageType":{
                     "message": message,
                     "username": self.login_settings["firstName"],
-                    "coloration": self.login_settings["color"],
                     "channel": channel,
                     "date": date,
                 }
@@ -293,8 +289,6 @@ class MainWindow(QMainWindow):
 
         channel = message_in_python["messageType"]["channel"]
         username = message_in_python["messageType"]["username"]
-        color = message_in_python["messageType"]["coloration"]
-        print(color)
 
         #on ajoute une notification seulement si le message vient d'un autre utilisateur et qu'il est affiché dans un autre channel que celui actuellement sélectionné
         addNotif = False
@@ -302,7 +296,7 @@ class MainWindow(QMainWindow):
             addNotif=True
 
         #ajout du message
-        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, coloration=color, addNotif=addNotif)
+        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)
 
 
 
