@@ -20,7 +20,7 @@
 QPushButton{
     color: white;
     min-height: 2em;
-    min-width: 5em;;
+    min-width: 5em;
 
 }
 
@@ -78,6 +78,10 @@ QLabel#Pixmap{
     /* max-height: 3em; */
     /* background: #323232;; */
     border: 0px
+}
+
+QListWidget{
+  border: 0px;
 }
 
 QLabel#groupbox_title { /*les titres*/
