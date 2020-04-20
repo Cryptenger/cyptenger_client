@@ -2,9 +2,9 @@ import sys, random, os, functools, datetime, json
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from plyer import notification
+#identicon
 from identicon import Identicon
 from PIL.ImageQt import ImageQt
-import hashlib
 
 class connectionWidgetOBJ(QWidget):
     """docstring for connectionWidgetOBJ."""
@@ -12,68 +12,59 @@ class connectionWidgetOBJ(QWidget):
     def __init__(self, *args, **kwargs):
         super(connectionWidgetOBJ, self).__init__(*args, **kwargs)
         self.buildWidget()
-        self.setStyleSheet('''QWidget{margin-left: 20em; margin-right: 20em}''')
+        self.setStyleSheet('''QLabel#user, QLineEdit, QPushButton{margin-left: 15em; margin-right: 15em}''')
 
     def buildWidget(self):
-        #******************
-        #layout
-        #******************
-        self.main_V_lyt = QVBoxLayout()
-        self.main_V_lyt.setAlignment(QtCore.Qt.AlignVCenter)
-        self.setLayout(self.main_V_lyt)
-
-        #******************
-        #objects
-        #******************
-        self.main_V_lyt.addStretch()
-
         #flag
+        pixmap = QtGui.QPixmap("./assets/img/cryptenger_flag.jpg")
+        cryptenger_logo = QLabel()
+        cryptenger_logo.setPixmap(pixmap)
+
         cryptenger_flag_lyt = QHBoxLayout()
         cryptenger_flag_lyt.setAlignment(QtCore.Qt.AlignCenter)
-
-        cryptenger_logo = QLabel("Cryptenger")
-        pixmap = QtGui.QPixmap("./assets/img/cryptenger_flag.jpg")
-        pixmap = pixmap.scaled(1000, 200, aspectRatioMode=QtCore.Qt.KeepAspectRatioByExpanding)
-        cryptenger_logo.setPixmap(pixmap)
         cryptenger_flag_lyt.addWidget(cryptenger_logo)
-
-        cryptenger_flag = QWidget()
-        cryptenger_flag.setLayout(cryptenger_flag_lyt)
-        cryptenger_flag.setFixedHeight(170)
-        cryptenger_flag.setStyleSheet("""border-color: transparent""")
-        self.main_V_lyt.addWidget(cryptenger_flag)
-
-        self.main_V_lyt.addStretch()
 
         #input
         name1_lb = QLabel('Username : ')
+        name1_lb.setObjectName("user")
         self.firstName_lne = QLineEdit()
         self.firstName_lne.setPlaceholderText('Boby')
-        self.main_V_lyt.addWidget(name1_lb)
-        self.main_V_lyt.addWidget(self.firstName_lne)
 
         adresse_lb = QLabel('\nAdress : ')
+        adresse_lb.setObjectName("user")
         self.adresse_lne = QLineEdit()
         self.adresse_lne.setPlaceholderText('localhost')
-        self.main_V_lyt.addWidget(adresse_lb)
-        self.main_V_lyt.addWidget(self.adresse_lne)
 
         port_lb = QLabel('\nPort : ')
+        port_lb.setObjectName("user")
         self.port_lne = QLineEdit()
         self.port_lne.setPlaceholderText('25565')
-        self.main_V_lyt.addWidget(port_lb)
-        self.main_V_lyt.addWidget(self.port_lne)
 
         space_lb = QLabel('\n')
+        space_lb.setObjectName("user")
         self.start_btn = QPushButton('Connection')
         self.start_btn.setFixedWidth(1000)
         self.start_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.connection_lyt = QHBoxLayout()
         self.connection_lyt.addWidget(self.start_btn)
 
+        self.main_V_lyt = QVBoxLayout()
+        self.main_V_lyt.setAlignment(QtCore.Qt.AlignVCenter)
+        self.main_V_lyt.addStretch()
+        self.main_V_lyt.addLayout(cryptenger_flag_lyt)
+        self.main_V_lyt.addStretch()
+        self.main_V_lyt.addWidget(name1_lb)
+        self.main_V_lyt.addWidget(self.firstName_lne)
+        self.main_V_lyt.addWidget(adresse_lb)
+        self.main_V_lyt.addWidget(self.adresse_lne)
+        self.main_V_lyt.addWidget(port_lb)
+        self.main_V_lyt.addWidget(self.port_lne)
         self.main_V_lyt.addWidget(space_lb)
         self.main_V_lyt.addLayout(self.connection_lyt)
         self.main_V_lyt.addStretch()
+        self.setLayout(self.main_V_lyt)
+
+
 
 
 class mainWidgetOBJ(QWidget):
@@ -83,11 +74,12 @@ class mainWidgetOBJ(QWidget):
         super(mainWidgetOBJ, self).__init__(*args, **kwargs)
         #variables
         self.app_settings = parentObject.app_settings
+        self.parentObject = parentObject
         self.serverName = serverName
         self.username = Username
-        self.channels = []  #objects
-        self.channelsNames= channelsNames #['salon 1', 'salon 2', 'salon 3']
-        #
+        self.channels = []  #channelOBJ objects : QScrollArea : les objets channels contenant les messages
+        self.channelsNames= channelsNames   #seulement le nom des channels dans une liste de strings
+
         self.buildWidget()
 
         #the shortcut to close Cryptenger
@@ -96,10 +88,14 @@ class mainWidgetOBJ(QWidget):
         self.quit_action.setShortcut(self.app_settings["shortcuts"]["quit_cryptenger"])
         self.addAction(self.quit_action)
 
+        self.restart_action = QAction(self)
+        self.restart_action.triggered.connect(functools.partial(self.restartCryptenger))
+        self.restart_action.setShortcut(self.app_settings["shortcuts"]["restart_cryptenger"])
+        self.addAction(self.restart_action)
+
+
 
     def buildWidget(self):
-
-        self.buildChannels()
 
         #layout
         self.main_grid_lyt = QGridLayout()
@@ -107,37 +103,41 @@ class mainWidgetOBJ(QWidget):
         # self.main_grid_lyt.setVerticalSpacing(2)
         self.setLayout(self.main_grid_lyt)
 
-
+        #left column
         self.serverUI = serverUI_OBJ(parent=self)
         self.channelsList = channelsListOBJ(parent=self, channels=self.channelsNames)
-
-
         self.userUI = userUI_OBJ(parent = self)
+
+        #middle column
+        #on crée tous les channels (QScrollArea) contenant les messages et on les ajoute à la liste self.channels
+        self.buildChannels()
         self.inputUI = inputOBJ(parent = self)
 
+        #right column
         self.userList = usersListOBJ(parent = self)
 
         #objects settings
         self.CHANNEL_lyt = QVBoxLayout()
-
         self.main_grid_lyt.addLayout(self.CHANNEL_lyt, 0, 1, 2, 1)
+        #slot : chaque fois qu'on clique sur un channel ca change le channelOBJ actuel
         self.channelsList.channel_list_widget.itemClicked.connect(functools.partial(self.setChannels, listWidget=self.channelsList))
-
-
+        #pour activer le premier channel lors du lancement de cryptenger
         self.setChannels(channelClicked='0')
+
+
     #***************************************************************************
     #       EVENTS
     #***************************************************************************
 
     def buildChannels(self):
-        """on initialise tous les channels au lancement de Cryptenger"""
+        """on crée tous les channels (channelOBJ -> QScrollArea) au lancement de Cryptenger"""
+        #autant de fois qu'il y a de channels, la liste (contenant les noms) a été envoyée par le serveur
         for i in range(len(self.channelsNames)):
             channel = channelOBJ(parent=self, text=str(i))
             self.channels.append(channel)
 
 
-
-    def setChannels(self,  listWidget=None, channelClicked=''):          #
+    def setChannels(self,  listWidget=None, channelClicked=''):
         """on switch de channel des qu'on clique sur un item de la liste des channels"""
         if channelClicked == '':        #pour mettre le channel 0 par defaut
             channelToSet_index = self.getCurrrentIndex(listWidget)
@@ -145,7 +145,11 @@ class mainWidgetOBJ(QWidget):
                           #A VOIR
         else:               #toutes les autres fois (a partir du moment ou on a changé de channel au moins une fois)
             channelToSet_index = int(channelClicked)
-        self.channelsList.current_channel.setText(self.channelsNames[channelToSet_index])
+        #set current channel label infos
+        self.channelsList.current_channel_lb.setText(self.channelsNames[channelToSet_index])
+        #change the place holder text in the input line edit
+        self.inputUI.input_lne.setPlaceholderText("Hit your message in #" + self.channelsNames[channelToSet_index])
+
         self.channels[channelToSet_index].scrollDown()                      #A VOIR
 
         for i in reversed(range(self.CHANNEL_lyt.count())):
@@ -209,7 +213,7 @@ class mainWidgetOBJ(QWidget):
             notif_txt = "  " + str(self.channelsList.selectChannelsWidgetList[channel].newMsg) + "  "
             self.channelsList.selectChannelsWidgetList[channel].notif.setText(notif_txt)
 
-    def setIdenticon(self, string, background='#F6F6F6'):     #could be used for channels and server too
+    def setIdenticon(self, string, background):     #could be used for channels and server too
         string_id = 0
         for i in string:
             string_id += ord(i)
@@ -226,18 +230,30 @@ class mainWidgetOBJ(QWidget):
 
         return identicon_lb, icon.color
 
+    # def setStyleSheetForAllWindows(self):
+    #     with open(self.app_settings["default_style"]) as style_file:
+    #         style = style_file.read()
+    #         print(type(self.parent))
+    #         self.parentObject.setStyleSheet(style)
+
     def openSettings(self):
         """open the settings window creating an object defined in the class settingsOBJ"""
-        print(('Hello world'))
         print(self.pos().x())
         print(self.pos().y())
         print(str(self.size()))
         print(self.height())
         self.settings = settingsOBJ(parent=self, location=[self.pos().x(), self.pos().y()], scale=[self.width(), self.height()])
 
+
     def quitCryptenger(self, toClose):
         """ to close Cryptenger """
         toClose.close()
+
+
+    def restartCryptenger(self, toClose):
+        """ to close Cryptenger """
+        os.startfile(os.path.dirname(os.path.realpath(__file__)) +"/client.py")
+        self.quitCryptenger(toClose=self.parentObject)
 
 
 
@@ -321,26 +337,19 @@ class channelsListOBJ(QGroupBox):
         channels_lb = QLabel('Channels')
         channels_lb.setObjectName("groupbox_title")
 
-        self.current_channel = QLabel('current')
+        self.current_channel_lb = QLabel('current')
+        self.current_channel_lb.setStyleSheet("QLabel{font-weight: bold}")
 
         top_infos_widget = QWidget()
         top_infos_lyt = QHBoxLayout(top_infos_widget)
         top_infos_lyt.addWidget(channels_lb)
         top_infos_lyt.addStretch()
-        top_infos_lyt.addWidget(self.current_channel)
+        top_infos_lyt.addWidget(self.current_channel_lb)
 
 
 
 
-        self.channel_list_lyt = QVBoxLayout(self)
-        self.channel_list_lyt.addWidget(top_infos_widget)
-        self.channel_list_lyt.addWidget(self.channel_list_widget)
-        self.setLayout(self.channel_list_lyt)
 
-        self.channel_list_lyt = QVBoxLayout(self)
-        self.channel_list_lyt.addWidget(top_infos_widget)
-        self.channel_list_lyt.addWidget(self.channel_list_widget)
-        self.setLayout(self.channel_list_lyt)
 
         self.channel_list_lyt = QVBoxLayout(self)
         self.channel_list_lyt.addWidget(top_infos_widget)
@@ -362,9 +371,9 @@ class channelItemOBJ(QWidget):
         self.channelsListOBJ_layout = QHBoxLayout()
 
         if is_a_channel == True:
-            color = "orange"
+            color = self.parent.app_settings["cryptenger_win"]["channels_icon_color"]#"orange"
         else:
-            color = "#F6F6F6"
+            color = self.parent.app_settings["cryptenger_win"]["users_icon_color"] #F6F6F6"
 
         identicon_lb, icon_color = self.parent.setIdenticon(string=channelName, background=color)
         self.channelsListOBJ_layout.addWidget(identicon_lb)
@@ -462,7 +471,7 @@ class messagesOBJ(QGroupBox):
         self.lyt.addWidget(hour_lb)
 
         #identicon
-        identicon_lb, icon_color = self.parent.setIdenticon(string=messageJSON["username"])
+        identicon_lb, icon_color = self.parent.setIdenticon(string=messageJSON["username"], background= self.parent.app_settings["cryptenger_win"]["users_icon_color"])
         self.lyt.addWidget(identicon_lb)
 
         #pseudo
@@ -501,7 +510,7 @@ class inputOBJ(QGroupBox):
         #objects
         self.input_lne = QLineEdit()
         self.input_lne.setStyleSheet("border: 0px solid transparent")
-        self.input_lne.setPlaceholderText('Hit your message here ;-)')
+        # self.input_lne.setPlaceholderText('Hit your message here ;-)')
 
         #layout
         self.input_lyt = QHBoxLayout()
@@ -516,21 +525,102 @@ class inputOBJ(QGroupBox):
 
 
 
-class settingsOBJ(QDialog):
+class settingsOBJ(QScrollArea):
     """Ben les settings quoi..."""
 
     def __init__(self, parent, scale, location=[100, 100], *args, **kwargs):
         super(settingsOBJ, self).__init__(*args, **kwargs)
+        #variables
+        self.parent = parent
+        self.location = location
+        self.scale = scale
+        self.initWindow()
+        self.buildSettings()
 
-        self.setGeometry(location[0]+100, location[1]+100, scale[0]/2, scale[1]/2)
+    def initWindow(self):
+        self.setGeometry(self.location[0]+100, self.location[1]+100, self.scale[0]/2, self.scale[1]/2)
         self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
         self.setWindowTitle('Settings')
         self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
+        # self.setFixedHeight(100)
+        # self.setWidgetResizable(True)
+
+        with open(self.parent.app_settings["default_style"]) as style_file:
+            style = style_file.read()
+            self.setStyleSheet(style)
         self.show()
 
-        with open(parent.app_settings["default_style"]) as style:
-            self.setStyleSheet(style.read())
+    def buildSettings(self):
+        #st = settings namespace
+        #gb = groupbox namespace
+        settings_lb = QLabel("Settings\n\n /!\\ Some settings require the restart of the application /!\\ ")
 
+        display_settings_gb = QGroupBox("Display settings")
+        display_settings_gb.setStyleSheet("margin: 15px 5px 5px 5px")
+
+        style_combo_st = QComboBox()
+        style_combo_st.addItem("Dark theme")
+        style_combo_st.addItem("Light theme")
+        style_combo_st.activated[str].connect(self.setStyleSheetC)
+
+        server_icon_color_st = QPushButton("pick color")
+        server_icon_color_st.clicked.connect(functools.partial(self.colorPicker, "server_icon_color"))
+
+        channels_icon_color_st = QPushButton("pick color")
+        channels_icon_color_st.clicked.connect(functools.partial(self.colorPicker, "channels_icon_color"))
+
+        users_icon_color_st = QPushButton("pick color")
+        users_icon_color_st.clicked.connect(functools.partial(self.colorPicker, "users_icon_color"))
+
+        display_settings_form_lyt = QFormLayout(display_settings_gb)
+        display_settings_form_lyt.setHorizontalSpacing(15)
+        display_settings_form_lyt.setVerticalSpacing(5)
+        display_settings_form_lyt.addRow("Style", style_combo_st)
+        display_settings_form_lyt.addRow("Server icon color", server_icon_color_st)
+        display_settings_form_lyt.addRow("Channel icon color", channels_icon_color_st)
+        display_settings_form_lyt.addRow("Users icon color", users_icon_color_st)
+
+
+        advanced_settings_gb = QGroupBox("Advanced settings")
+
+
+
+        main_settings_lyt = QGridLayout(self)
+        main_settings_lyt.setAlignment(QtCore.Qt.AlignTop)
+        main_settings_lyt.addWidget(settings_lb)
+        main_settings_lyt.addWidget(display_settings_gb)
+        main_settings_lyt.addWidget(advanced_settings_gb)
+
+
+    def colorPicker(self, setting):
+        color = QColorDialog.getColor()
+        self.parent.app_settings["cryptenger_win"][setting] = str(color.name())
+
+        self.write_a_setting_in_json_settings_file()
+
+    def setStyleSheetC(self, str):
+        # print(self.parent.app_settings)
+        # self.parent.parentObject.setStyleSheetForAllWindows()
+        print(str)
+        if str == "Dark theme":
+            self.parent.app_settings["default_style"] = "./assets/css/dark_style.css"
+
+        if str == "Light theme":
+            self.parent.app_settings["default_style"] = "./assets/css/light_style.css"
+        # new_settings = json.dumps
+        self.write_a_setting_in_json_settings_file()
+
+        # self.parent.setStyleSheet(self.parent.app_settings["cryptenger_win"]["default_style"])
+        with open(self.parent.app_settings["default_style"], "r") as style:
+            # styleSheet =
+            new_style = style.read()
+            self.setStyleSheet(new_style)
+            self.parent.parentObject.setStyleSheet(new_style)
+
+    def write_a_setting_in_json_settings_file(self):
+        new_settings = json.dumps(self.parent.app_settings, indent=1)
+        with open("./settings.json", "w") as app_settings:
+            app_settings.write(new_settings)
 
 
 class serverUI_OBJ(QGroupBox):
@@ -546,7 +636,9 @@ class serverUI_OBJ(QGroupBox):
         this is the widget located on the top left and corner displaying the server's informations
         """
         #objects
-        identicon_lb, icon_color = self.parent.setIdenticon(string=self.parent.serverName, background="cyan")
+        identicon_lb, icon_color = self.parent.setIdenticon(
+            string=self.parent.serverName,
+            background=self.parent.app_settings["cryptenger_win"]["server_icon_color"])
         serverInfos = QLabel("About server\n")
         serverInfos.setObjectName("groupbox_title")
         self.serverName_lb = QLabel(str(self.parent.serverName))
@@ -576,7 +668,10 @@ class userUI_OBJ(QGroupBox):
 
     def buildUserUI(self):
         #objects
-        identicon_lb, icon_color = self.parent.setIdenticon(string=self.parent.username)
+        identicon_lb, icon_color = self.parent.setIdenticon(
+            string=self.parent.username,
+            background=self.parent.app_settings["cryptenger_win"]["users_icon_color"]
+        )
         username = QLabel(self.parent.username)
         username.setStyleSheet("QLabel{color: "+icon_color+"; font-weight: bold}")
         self.settings_btn = QPushButton(QtGui.QIcon("./assets/img/settings_icon.png"), '')

@@ -86,16 +86,19 @@ class MainWindow(QMainWindow):
         self.setGeometry(
             self.app_settings["cryptenger_win"]["window_location"][0],
             self.app_settings["cryptenger_win"]["window_location"][1],
-            self.app_settings["cryptenger_win"]["window_size"][0],
-            self.app_settings["cryptenger_win"]["window_size"][1]
+            self.app_settings["cryptenger_win"]["connection_window_size"][0],
+            self.app_settings["cryptenger_win"]["connection_window_size"][1]
+            # 720, 300
         )
         self.setWindowTitle('Cryptenger')
         self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
-        self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
-        self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
+        # self.setMinimumWidth(self.app_settings["cryptenger_win"]["connection_window_minimum_size"][0])
+        # self.setMinimumHeight(self.app_settings["cryptenger_win"]["connection_window_minimum_size"][1])
+
 
         with open(self.app_settings["default_style"], "r") as style:
-            self.setStyleSheet(style.read())
+            styleSheet = style.read()
+            self.setStyleSheet(styleSheet)
 
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
@@ -195,6 +198,14 @@ class MainWindow(QMainWindow):
             channelsNames=self.channelList,
         )
 
+        #maintenant la taille minimum de la fenetre est plus petite
+        self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
+        self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
+        self.resize(
+            self.app_settings["cryptenger_win"]["window_size"][0],
+            self.app_settings["cryptenger_win"]["window_size"][1]
+        )
+
         self.main_V_lyt.addWidget(self.cryptenger_win)
         self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)
 
@@ -205,7 +216,7 @@ class MainWindow(QMainWindow):
         self.server_connection.send(b"done")  # Envoie au serveur la confirmation de réception du message
         print("### END Channel list received ###\n")
 
-        #
+
         # RÉCUPÉRATION DE L'HISTORIQUE
         print("\n### BEGIN - Received History ###")
         encoded_history = b""

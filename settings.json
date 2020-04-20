@@ -1,34 +1,46 @@
 {
-    "default_style": "./assets/css/dark_style.css",
-    "user_color": "to_define_user_customisation",
-    "cryptenger_icon": "./assets/ico/cryptenger_icon.ico",
-
-    "default_login_data": {
-      "username": "Username",
-      "adress": "localhost",
-      "port": "25565"
-    },
-
-    "notifications": {
-      "desktop_notif": true,
-      "cryptenger_notif": true
-    },
-
-    "cryptenger_win": {
-      "window_location": [0, 30],
-      "window_size": [1280, 720],
-      "window_minimum_size": [800, 300],
-      "left_column_width": 270,
-      "right_column_width": 180,
-      "user_ui_height": 50,
-      "server_ui_height": 50
-    },
-
-    "settings_win": {
-      "test": 10
-    },
-
-    "shortcuts": {
-      "quit_cryptenger": "CTRL+Q"
-    }
+ "default_style": "./assets/css/dark_style.css",
+ "user_color": "",
+ "cryptenger_icon": "./assets/ico/cryptenger_icon.ico",
+ "default_login_data": {
+  "username": "Username",
+  "adress": "localhost",
+  "port": "25565"
+ },
+ "notifications": {
+  "desktop_notif": true,
+  "cryptenger_notif": true
+ },
+ "cryptenger_win": {
+  "window_location": [
+   0,
+   30
+  ],
+  "window_size": [
+   1280,
+   720
+  ],
+  "connection_window_size": [
+   720,
+   300
+  ],
+  "window_minimum_size": [
+   900,
+   300
+  ],
+  "left_column_width": 270,
+  "right_column_width": 180,
+  "user_ui_height": 50,
+  "server_ui_height": 50,
+  "server_icon_color": "#274eff",
+  "channels_icon_color": "#ff8737",
+  "users_icon_color": "#eaffde"
+ },
+ "settings_win": {
+  "test": 10
+ },
+ "shortcuts": {
+  "quit_cryptenger": "CTRL+Q",
+  "restart_cryptenger": "CTRL+R"
+ }
 }
