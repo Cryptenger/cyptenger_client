@@ -1,6 +1,7 @@
 import sys, random, os, functools, datetime, json
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
+#notifications
 from plyer import notification
 #identicon
 from identicon import Identicon
@@ -693,3 +694,18 @@ class userUI_OBJ(QGroupBox):
 
         #add widget to main layout
         self.parent.main_grid_lyt.addWidget(self, 2, 0, 1, 1)
+
+class warningOBG(QMessageBox):
+    """docstring for WarningOBG."""
+
+    def __init__(self, parent, windowTitle, h1text, informativeText, pythonError, sizeX=800, sizeY=100):
+        super(warningOBG, self).__init__()
+        self.setIcon(QMessageBox.Warning)
+        self.setWindowTitle('WARNING - ' + windowTitle)
+        self.setText(h1text)
+        self.setInformativeText(informativeText)
+        self.setDetailedText("Details : \n" + pythonError)
+        with open(parent.app_settings["default_style"], "r") as style:
+            self.setStyleSheet(style.read())
+        self.resize(sizeX, sizeY)
+        self.exec_()

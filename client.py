@@ -13,7 +13,7 @@ except:
     exit()
 
 #nos propres modules
-from gui import mainWidgetOBJ, connectionWidgetOBJ
+from gui import mainWidgetOBJ, connectionWidgetOBJ, warningOBG
 from crypting import Crypting
 
 
@@ -138,6 +138,13 @@ class MainWindow(QMainWindow):
         itIsOK = True
         for i in self.login_settings:
             if self.login_settings[i]=='':
+                warning = warningOBG(
+                    parent=self,
+                    windowTitle="Missing informations",
+                    h1text="Missing informations",
+                    informativeText="You must give a " + str(i),
+                    pythonError="You must give a " + i
+                    )
                 print('You must give a ' + i)
                 itIsOK = False
 
@@ -146,32 +153,34 @@ class MainWindow(QMainWindow):
         if itIsOK == True:
             #close connection widget
 
-            # try:        #si la connection est impossible, on affiche un message d'erreur et on attend
+            try:        #si la connection est impossible, on affiche un message d'erreur et on attend
                 #BUILD SERVER
                 #creating a connection
-            self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_connection.connect((self.login_settings['adress'], int(self.login_settings['port'])))
-            print("Connection established on the port " + self.login_settings['port'] + "\n")
+                self.server_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.server_connection.connect((self.login_settings['adress'], int(self.login_settings['port'])))
+                print("Connection established on the port " + self.login_settings['port'] + "\n")
 
-            self.initEncryption()
-            self.setupApplication()
+                self.initEncryption()
+                self.setupApplication()
 
-            #starting server
-            self.threadpool = QtCore.QThreadPool()
-            # print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+                #starting server
+                self.threadpool = QtCore.QThreadPool()
+                # print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-            self.worker = Worker(parent = self)
-            self.workerThread = QtCore.QThread()
-            self.workerThread.started.connect(self.worker.run) #r Start the Run function
-            self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
-            self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
-            self.workerThread.start()
+                self.worker = Worker(parent = self)
+                self.workerThread = QtCore.QThread()
+                self.workerThread.started.connect(self.worker.run) #r Start the Run function
+                self.worker.received_message.connect(self.msgRecv)  # Connect your signals/slots
+                self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
+                self.workerThread.start()
 
-            self.connection_widget.close()
-            # except:
-                # print("Couldn't establish network communication with server")
-                # print("Something's wrong. Maybe the server is not started. Check the port, the address.")
-                # print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
+                self.connection_widget.close()
+            except Exception as e:
+                print(e)
+                print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
+
+                warning = warningOBG(parent=self, windowTitle="Connection failed", h1text="Connection failed", informativeText="Maybe the server is not started", pythonError=str(e))
+
 
     def initEncryption(self):
         print("Initlialize encryption !\n")
