@@ -13,7 +13,7 @@ except:
     exit()
 
 #nos propres modules
-from gui import mainWidgetOBJ, connectionWidgetOBJ
+from gui import mainWidgetOBJ, connectionWidgetOBJ, warningOBG
 from crypting import Crypting
 
 
@@ -86,16 +86,20 @@ class MainWindow(QMainWindow):
         self.setGeometry(
             self.app_settings["cryptenger_win"]["window_location"][0],
             self.app_settings["cryptenger_win"]["window_location"][1],
-            self.app_settings["cryptenger_win"]["window_size"][0],
-            self.app_settings["cryptenger_win"]["window_size"][1]
+            self.app_settings["cryptenger_win"]["connection_window_size"][0],
+            self.app_settings["cryptenger_win"]["connection_window_size"][1]
+            # 720, 300
         )
         self.setWindowTitle('Cryptenger')
         self.setWindowIcon(QtGui.QIcon('./assets/ico/cryptenger_icon.ico'))
-        self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
-        self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
+        # self.setMinimumWidth(self.app_settings["cryptenger_win"]["connection_window_minimum_size"][0])
+        # self.setMinimumHeight(self.app_settings["cryptenger_win"]["connection_window_minimum_size"][1])
+
 
         with open(self.app_settings["default_style"], "r") as style:
-            self.setStyleSheet(style.read())
+            styleSheet = style.read()
+            self.setStyleSheet(styleSheet)
+
 
     def buildWindow(self):                                                      #le contenu de la fenêtre principale
         #fenêtre de connection
@@ -127,14 +131,20 @@ class MainWindow(QMainWindow):
         self.login_settings = {
             "firstName" : self.connection_widget.firstName_lne.text(),
             "port" : self.connection_widget.port_lne.text(),
-            "adress" : self.connection_widget.adresse_lne.text(),
-            "color" : [random.randint(0, 255), random.randint(100, 190), random.randint(200, 255)]
+            "adress" : self.connection_widget.adresse_lne.text()
             }
 
         #check if the user have given all the required informations
         itIsOK = True
         for i in self.login_settings:
             if self.login_settings[i]=='':
+                warning = warningOBG(
+                    parent=self,
+                    windowTitle="Missing informations",
+                    h1text="Missing informations",
+                    informativeText="You must give a " + str(i),
+                    pythonError="You must give a " + i
+                    )
                 print('You must give a ' + i)
                 itIsOK = False
 
@@ -165,10 +175,12 @@ class MainWindow(QMainWindow):
                 self.workerThread.start()
 
                 self.connection_widget.close()
-            except:
-                print("Couldn't establish network communication with server")
-                print("Something's wrong. Maybe the server is not started. Check the port, the address.")
+            except Exception as e:
+                print(e)
                 print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
+
+                warning = warningOBG(parent=self, windowTitle="Connection failed", h1text="Connection failed", informativeText="Maybe the server is not started", pythonError=str(e))
+
 
     def initEncryption(self):
         print("Initlialize encryption !\n")
@@ -195,6 +207,14 @@ class MainWindow(QMainWindow):
             channelsNames=self.channelList,
         )
 
+        #maintenant la taille minimum de la fenetre est plus petite
+        self.setMinimumWidth(self.app_settings["cryptenger_win"]["window_minimum_size"][0])
+        self.setMinimumHeight(self.app_settings["cryptenger_win"]["window_minimum_size"][1])
+        self.resize(
+            self.app_settings["cryptenger_win"]["window_size"][0],
+            self.app_settings["cryptenger_win"]["window_size"][1]
+        )
+
         self.main_V_lyt.addWidget(self.cryptenger_win)
         self.cryptenger_win.inputUI.input_lne.returnPressed.connect(self.msgSend)
 
@@ -205,7 +225,7 @@ class MainWindow(QMainWindow):
         self.server_connection.send(b"done")  # Envoie au serveur la confirmation de réception du message
         print("### END Channel list received ###\n")
 
-        #
+
         # RÉCUPÉRATION DE L'HISTORIQUE
         print("\n### BEGIN - Received History ###")
         encoded_history = b""
@@ -223,8 +243,7 @@ class MainWindow(QMainWindow):
         for i in range(0, len(history)):
             message = history[i]
             channel = json.loads(message)["messageType"]['channel']  # récupère le channel
-            color = json.loads(message)["messageType"]['coloration']
-            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), coloration=color) # ajout du message
+            self.cryptenger_win.addMessageToAChannel(msg=message, channel=int(channel), isHistory=True) # ajout du message
         print("\n### END - Receiving History ###")
 
 
@@ -252,7 +271,6 @@ class MainWindow(QMainWindow):
                 "messageType":{
                     "message": message,
                     "username": self.login_settings["firstName"],
-                    "coloration": self.login_settings["color"],
                     "channel": channel,
                     "date": date,
                 }
@@ -291,8 +309,6 @@ class MainWindow(QMainWindow):
 
         channel = message_in_python["messageType"]["channel"]
         username = message_in_python["messageType"]["username"]
-        color = message_in_python["messageType"]["coloration"]
-        print(color)
 
         #on ajoute une notification seulement si le message vient d'un autre utilisateur et qu'il est affiché dans un autre channel que celui actuellement sélectionné
         addNotif = False
@@ -300,7 +316,7 @@ class MainWindow(QMainWindow):
             addNotif=True
 
         #ajout du message
-        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, coloration=color, addNotif=addNotif)
+        self.cryptenger_win.addMessageToAChannel(msg = msg, channel=channel, addNotif=addNotif)
 
 
 

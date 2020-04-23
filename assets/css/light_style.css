@@ -43,26 +43,6 @@ QLabel{
 QLabel:hover{
     border: 2px solid transparent;
 }
-/*
-QTabBar::tab{       tab selector/button
-    color: white;
-    background: transparent;
-    border: 10px solid transparent;
-    border-radius: 4px;
-}
-
-QTabBar::tab:selected{
-    background: orange;
-    border: 10px solid transparent;
-    border-radius: 4px;
-}
-
-QTabWidget::pane{
-  background: #262626;
-  border: 5px solid #262626;  truc relou
-  border-radius: 3px;
-  padding: 0.5em;
-}*/
 
 QScrollBar{            /* le fond*/
   border: 0px;  /* border autour du truc qu'on tire*/
@@ -101,7 +81,11 @@ QGroupBox{
     /* padding: 5px; */
     /* max-height: 3em; */
     /* background: #323232;; */
-    border: 0px;
+    border: 0px solid transparent;
+}
+
+QTextEdit{
+  border: 0px
 }
 
 #box{

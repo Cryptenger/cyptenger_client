@@ -20,7 +20,7 @@
 QPushButton{
     color: white;
     min-height: 2em;
-    min-width: 5em;;
+    min-width: 5em;
 
 }
 
@@ -39,30 +39,6 @@ QLineEdit{
 QLabel{
     border: 0px;
 }
-
-QLabel:hover{
-    border: 2px solid transparent;
-}
-/*
-QTabBar::tab{       tab selector/button
-    color: white;
-    background: transparent;
-    border: 10px solid transparent;
-    border-radius: 4px;
-}
-
-QTabBar::tab:selected{
-    background: orange;
-    border: 10px solid transparent;
-    border-radius: 4px;
-}
-
-QTabWidget::pane{
-  background: #262626;
-  border: 5px solid #262626;  truc relou
-  border-radius: 3px;
-  padding: 0.5em;
-}*/
 
 QScrollBar{            /* le fond*/
   border: 0px;  /* border autour du truc qu'on tire*/
@@ -97,12 +73,17 @@ QLabel#Pixmap{
   background-image: url("assets/img/cryptenger_flag.jpg");
 }
 
-QGroupBox{
+.messagesOBJ {
     /* padding: 5px; */
     /* max-height: 3em; */
     /* background: #323232;; */
+    border: 0px
 }
 
-#box{
-  /* background: red; */
+QListWidget{
+  border: 0px;
+}
+
+QLabel#groupbox_title { /*les titres*/
+    color: gray;
 }
