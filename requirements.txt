@@ -1,3 +1,4 @@
 cryptography==2.8
+plyer==1.4.3
 pycryptodome==3.9.7
 PyQt5==5.14.2
