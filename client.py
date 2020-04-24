@@ -78,7 +78,11 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """fonction appelée (toute seule) quand l'utilisateur ferme cryptenger"""
-        self.server_connection.send("<Close_the_connection>".encode())
+        try: # Test pour voir si la connexion avec serveur est faite
+            self.server_connection.send("<Close_the_connection>".encode()) # on envoie la fermeture de la connexion
+        except:
+            pass # Le connexion n'est pas faite, on ferme juste le client
+
         print("Cryptenger closed")
         try:    #on mettra ici toutes les fenêtres à fermer
             self.cryptenger_win.settings.close()
@@ -89,7 +93,6 @@ class MainWindow(QMainWindow):
     def initWindow(self):                                                       #les self.settings de la fenêtre principale
 
         with open("./settings.json", "r") as app_settings:
-            print(app_settings)
             self.app_settings = json.load(app_settings)
         self.setGeometry(
             self.app_settings["cryptenger_win"]["window_location"][0],
@@ -152,7 +155,7 @@ class MainWindow(QMainWindow):
                     h1text="Missing informations",
                     informativeText="You must give a " + str(i),
                     pythonError="You must give a " + i
-                    )
+                )
                 print('You must give a ' + i)
                 itIsOK = False
 
@@ -239,7 +242,6 @@ class MainWindow(QMainWindow):
         encoded_history = b""
         while True: # boucle permettant de récupérer un historique trop long
             part = self.server_connection.recv(4096) # On récupère un paquet de 4096 octets
-            print('\n@@@ ET DE UN TOUR ! [' + str(len(part)) + '] @@@\n')
             encoded_history += part # on l'ajoute à l'historique
 
             if (len(part) < 4096): # Si le paquet fait moins de 4096 octets on s'arrête
