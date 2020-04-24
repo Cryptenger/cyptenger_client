@@ -29,7 +29,7 @@ class connectionWidgetOBJ(QWidget):
         name1_lb = QLabel('Username : ')
         name1_lb.setObjectName("user")
         self.firstName_lne = QLineEdit()
-        self.firstName_lne.setPlaceholderText('Boby')
+        self.firstName_lne.setPlaceholderText('Username')
 
         adresse_lb = QLabel('\nAdress : ')
         adresse_lb.setObjectName("user")

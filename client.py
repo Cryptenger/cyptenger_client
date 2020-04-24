@@ -50,14 +50,22 @@ class Worker(QtCore.QObject):#QRunnable):
     def run(self):
         # global history
         while True:
-            server_message, wlist, xlist = select.select([self.parent.server_connection], [], [], 0.05)
+            try:
+                server_message, wlist, xlist = select.select([self.parent.server_connection], [], [], 0.05)
 
-            if len(server_message) != 0:
-                # Client est de type socket
-                msg_received = server_message[0].recv(2048)
-                # Peut planter si le message contient des caractères spéciaux
-                self.received_message.emit(msg_received.decode()) # On envoie le message à la fonction pour le traiter [déchiffrage, affichage...]
-
+                if len(server_message) != 0:
+                    # Client est de type socket
+                    msg_received = server_message[0].recv(2048)
+                    # Peut planter si le message contient des caractères spéciaux
+                    self.received_message.emit(msg_received.decode()) # On envoie le message à la fonction pour le traiter [déchiffrage, affichage...]
+            except Exception as ex :
+                warning = warningOBG(
+                    parent=self.parent,
+                    windowTitle="Server closed",
+                    h1text="Server closed",
+                    informativeText="The server has been closed. \nYou may contact your host",
+                    pythonError=str(ex)
+                    )
 
 class MainWindow(QMainWindow):
     """Ben, tout Cryptenger"""
@@ -163,6 +171,7 @@ class MainWindow(QMainWindow):
                 self.initEncryption()
                 self.setupApplication()
 
+                self.connection_widget.close()
                 #starting server
                 self.threadpool = QtCore.QThreadPool()
                 # print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
@@ -174,7 +183,6 @@ class MainWindow(QMainWindow):
                 self.worker.moveToThread(self.workerThread)  # Move the Worker object to the Thread object
                 self.workerThread.start()
 
-                self.connection_widget.close()
             except Exception as e:
                 print(e)
                 print("Unexpected error:", sys.exc_info()[0]) # TEMPORAIRE  -- REMOVE ME
